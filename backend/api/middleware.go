@@ -2,8 +2,13 @@ package api
 
 import (
 	"errors"
+	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/adminauth"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
 )
 
 var (
@@ -21,6 +26,32 @@ func CORSMiddleware() gin.HandlerFunc {
 			c.AbortWithStatus(204)
 			return
 		}
+
+		c.Next()
+	}
+}
+
+func JWTAdminMiddleware(adminAuthService adminauth.Service) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authorizationHeader := c.GetHeader("Authorization")
+		if authorizationHeader == "" {
+			c.JSON(http.StatusUnauthorized, lib.BaseResponse{
+				Message: ErrUnauthorizedRequest.Error(),
+			})
+			c.Abort()
+			return
+		}
+		tokenString := strings.Replace(authorizationHeader, "Bearer ", "", -1)
+		claims, err := adminAuthService.ValidateToken(tokenString)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			c.Abort()
+			return
+		}
+
+		c.Set(constants.JWTClaims, claims)
 
 		c.Next()
 	}

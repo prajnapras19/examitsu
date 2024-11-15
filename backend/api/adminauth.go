@@ -58,6 +58,12 @@ func (h *handler) LoginAdmin(c *gin.Context) {
 	})
 }
 
+func (h *handler) IsLoggedInAsAdmin(c *gin.Context) {
+	c.JSON(http.StatusOK, lib.BaseResponse{
+		Message: constants.Success,
+	})
+}
+
 /***
 	mapping
 ***/

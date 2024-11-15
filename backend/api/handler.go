@@ -7,6 +7,7 @@ import (
 
 type Handler interface {
 	LoginAdmin(*gin.Context)
+	IsLoggedInAsAdmin(*gin.Context)
 }
 
 type handler struct {

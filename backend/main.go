@@ -37,6 +37,8 @@ func initDefault(cfg *config.Config) {
 
 	adminGroup := apiV1.Group("/admin")
 	adminGroup.POST("/login", handler.LoginAdmin)
+	adminGroup.Use(api.JWTAdminMiddleware(adminAuthService))
+	adminGroup.GET("/is-logged-in", handler.IsLoggedInAsAdmin)
 
 	router.Run(fmt.Sprintf(":%d", cfg.RESTPort))
 }
