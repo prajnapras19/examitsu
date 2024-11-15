@@ -7,7 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/adminauth"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/api"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/client/mysql"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/exam"
 )
 
 func main() {
@@ -16,12 +18,20 @@ func main() {
 }
 
 func initDefault(cfg *config.Config) {
+	// clients
+	dbmysql := mysql.NewService(cfg.MySQLConfig)
+
+	// repositories
+	examRepository := exam.NewRepository(dbmysql.GetDB())
+
 	// services
 	adminAuthService := adminauth.NewService(cfg)
+	examService := exam.NewService(examRepository)
 
 	// handlers
 	handler := api.NewHandler(
 		adminAuthService,
+		examService,
 	)
 
 	// routes
@@ -39,6 +49,8 @@ func initDefault(cfg *config.Config) {
 	adminGroup.POST("/login", handler.LoginAdmin)
 	adminGroup.Use(api.JWTAdminMiddleware(adminAuthService))
 	adminGroup.GET("/is-logged-in", handler.IsLoggedInAsAdmin)
+
+	adminGroup.POST("/exam", handler.CreateExam)
 
 	router.Run(fmt.Sprintf(":%d", cfg.RESTPort))
 }

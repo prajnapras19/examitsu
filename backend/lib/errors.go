@@ -16,4 +16,14 @@ var (
 	ErrIncorrectPassword    = errors.New("incorrect password")
 	ErrSigningMethodInvalid = errors.New("signing method invalid")
 	ErrUnauthorizedRequest  = errors.New("unauthorized request")
+
+	// exam.repository
+	ErrExamNotFound = errors.New("exam not found")
+
+	// exam.service
+	ErrFailedToCreateExam      = errors.New("failed to create exam")
+	ErrFailedToGetExamBySerial = errors.New("failed to get exam by serial")
+	ErrFailedToGetAllExams     = errors.New("failed to get all exams")
+	ErrFailedToUpdateExam      = errors.New("failed to update exam")
+	ErrFailedToDeleteExam      = errors.New("failed to delete exam")
 )
