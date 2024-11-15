@@ -18,6 +18,7 @@ CREATE TABLE questions(
     
     exam_id BIGINT NOT NULL,
     order_number BIGINT NOT NULL DEFAULT 0,
+    data LONGTEXT,
 
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -25,20 +26,6 @@ CREATE TABLE questions(
 
     CONSTRAINT PK_id PRIMARY KEY (id),
     CONSTRAINT FOREIGN KEY (exam_id) REFERENCES exams(id)
-);
-
-CREATE TABLE question_images(
-    id BIGINT NOT NULL AUTO_INCREMENT,
-
-    question_id BIGINT NOT NULL,
-    image_url TEXT,
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP DEFAULT NULL,
-
-    CONSTRAINT PK_id PRIMARY KEY (id),
-    CONSTRAINT FOREIGN KEY (question_id) REFERENCES questions(id)
 );
 
 CREATE TABLE mcq_options(
