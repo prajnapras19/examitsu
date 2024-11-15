@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 
+	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
 )
 
@@ -29,6 +30,8 @@ func NewService(
 
 func (s *service) CreateExam(exam *Exam) (*Exam, error) {
 	var err error
+
+	exam.Serial, err = lib.GenerateRandomString(constants.ExamSerialLength)
 
 	res, err := s.examRepository.CreateExam(exam)
 	if err != nil {

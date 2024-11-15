@@ -50,7 +50,7 @@ func initDefault(cfg *config.Config) {
 	adminGroup.Use(api.JWTAdminMiddleware(adminAuthService))
 	adminGroup.GET("/is-logged-in", handler.IsLoggedInAsAdmin)
 
-	adminGroup.POST("/exams", handler.CreateExam)
+	adminGroup.PUT("/exams", handler.CreateExam)
 
 	router.Run(fmt.Sprintf(":%d", cfg.RESTPort))
 }

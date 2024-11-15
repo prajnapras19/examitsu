@@ -7,4 +7,6 @@ const (
 	Error     = "error"
 
 	SystemUser = "SYSTEM"
+
+	ExamSerialLength = 24
 )
