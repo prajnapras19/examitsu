@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/adminauth"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/api"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
 )
@@ -15,8 +16,13 @@ func main() {
 }
 
 func initDefault(cfg *config.Config) {
+	// services
+	adminAuthService := adminauth.NewService(cfg)
+
 	// handlers
-	handler := api.NewHandler()
+	handler := api.NewHandler(
+		adminAuthService,
+	)
 
 	// routes
 	router := gin.Default()
@@ -29,7 +35,8 @@ func initDefault(cfg *config.Config) {
 
 	apiV1 := router.Group("/api/v1")
 
-	apiV1.POST("/admin/login", handler.LoginAdmin)
+	adminGroup := apiV1.Group("/admin")
+	adminGroup.POST("/login", handler.LoginAdmin)
 
 	router.Run(fmt.Sprintf(":%d", cfg.RESTPort))
 }
