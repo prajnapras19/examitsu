@@ -51,6 +51,10 @@ func initDefault(cfg *config.Config) {
 	adminGroup.GET("/is-logged-in", handler.IsLoggedInAsAdmin)
 
 	adminGroup.PUT("/exams", handler.CreateExam)
+	adminGroup.POST("/exams/:serial", handler.GetExamBySerial)
+	adminGroup.POST("/exams", handler.GetAllExams)
+	adminGroup.PATCH("/exams/:serial", handler.UpdateExam)
+	adminGroup.DELETE("/exams/:serial", handler.DeleteExamBySerial)
 
 	router.Run(fmt.Sprintf(":%d", cfg.RESTPort))
 }

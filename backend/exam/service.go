@@ -76,6 +76,9 @@ func (s *service) DeleteExamBySerial(serial string) error {
 	err := s.examRepository.DeleteExamBySerial(serial)
 	if err != nil {
 		log.Println("[exam][service][DeleteExam] failed to delete exam:", err.Error())
+		if errors.Is(err, lib.ErrExamNotFound) {
+			return err
+		}
 		return lib.ErrFailedToDeleteExam
 	}
 	return nil

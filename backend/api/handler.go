@@ -11,6 +11,10 @@ type Handler interface {
 	IsLoggedInAsAdmin(*gin.Context)
 
 	CreateExam(*gin.Context)
+	GetExamBySerial(*gin.Context)
+	GetAllExams(*gin.Context)
+	UpdateExam(*gin.Context)
+	DeleteExamBySerial(*gin.Context)
 }
 
 type handler struct {

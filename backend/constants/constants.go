@@ -9,4 +9,6 @@ const (
 	SystemUser = "SYSTEM"
 
 	ExamSerialLength = 24
+
+	Serial = "serial"
 )

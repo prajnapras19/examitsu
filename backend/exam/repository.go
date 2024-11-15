@@ -63,7 +63,7 @@ func (r *repository) UpdateExam(exam *Exam) error {
 
 		if err := tx.Model(&Exam{}).
 			Where("serial = ?", exam.Serial).
-			Update("is_open", exam.Name).
+			Update("is_open", exam.IsOpen).
 			Error; err != nil {
 			return err
 		}

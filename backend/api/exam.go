@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -61,6 +62,94 @@ func (h *handler) CreateExam(c *gin.Context) {
 	})
 }
 
+func (h *handler) GetExamBySerial(c *gin.Context) {
+	svcRes, err := h.examService.GetExamBySerial(c.Param(constants.Serial))
+	if err != nil {
+		if errors.Is(err, lib.ErrExamNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	res := h.MapExamEntityToExamData(svcRes)
+	c.JSON(http.StatusOK, lib.BaseResponse{
+		Message: constants.Success,
+		Data:    res,
+	})
+}
+
+func (h *handler) GetAllExams(c *gin.Context) {
+	svcRes, err := h.examService.GetAllExams()
+	if err != nil {
+		if errors.Is(err, lib.ErrExamNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	res := h.MapExamEntityListToExamDataList(svcRes)
+	c.JSON(http.StatusOK, lib.BaseResponse{
+		Message: constants.Success,
+		Data:    res,
+	})
+}
+
+func (h *handler) UpdateExam(c *gin.Context) {
+	var req UpdateExamRequest
+
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrFailedToParseRequest.Error(),
+		})
+		return
+	}
+	req.Serial = c.Param(constants.Serial)
+
+	svcReq := h.MapUpdateExamRequestToExamEntity(&req)
+
+	err := h.examService.UpdateExam(svcReq)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, lib.BaseResponse{
+		Message: constants.Success,
+	})
+}
+
+func (h *handler) DeleteExamBySerial(c *gin.Context) {
+	err := h.examService.DeleteExamBySerial(c.Param(constants.Serial))
+	if err != nil {
+		if errors.Is(err, lib.ErrExamNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, lib.BaseResponse{
+		Message: constants.Success,
+	})
+}
+
 /***
 	mapping
 ***/
@@ -86,4 +175,12 @@ func (h *handler) MapExamEntityListToExamDataList(svcRes []*exam.Exam) []*ExamDa
 		res = append(res, h.MapExamEntityToExamData(obj))
 	}
 	return res
+}
+
+func (h *handler) MapUpdateExamRequestToExamEntity(req *UpdateExamRequest) *exam.Exam {
+	return &exam.Exam{
+		Serial: req.Serial,
+		Name:   req.Name,
+		IsOpen: req.IsOpen,
+	}
 }
