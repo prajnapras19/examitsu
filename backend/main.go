@@ -39,6 +39,7 @@ func initDefault(cfg *config.Config) {
 
 	// handlers
 	handler := api.NewHandler(
+		cfg,
 		adminAuthService,
 		examService,
 		questionService,

@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/mcqoption"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/question"
 	"gorm.io/gorm"
 )
@@ -74,6 +75,13 @@ func (h *handler) CreateQuestion(c *gin.Context) {
 			Message: err.Error(),
 		})
 		return
+	}
+
+	for _, mcqOption := range h.cfg.InitialMcqOptions {
+		h.mcqOptionService.CreateMcqOption(&mcqoption.McqOption{
+			QuestionID:  svcRes.ID,
+			Description: mcqOption,
+		})
 	}
 
 	res := h.MapQuestionEntityToQuestionData(svcRes)

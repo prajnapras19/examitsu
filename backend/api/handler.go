@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/adminauth"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/exam"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/mcqoption"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/participant"
@@ -37,6 +38,7 @@ type Handler interface {
 }
 
 type handler struct {
+	cfg                *config.Config
 	adminAuthService   adminauth.Service
 	examService        exam.Service
 	questionService    question.Service
@@ -45,6 +47,7 @@ type handler struct {
 }
 
 func NewHandler(
+	cfg *config.Config,
 	adminAuthService adminauth.Service,
 	examService exam.Service,
 	questionService question.Service,
@@ -52,6 +55,7 @@ func NewHandler(
 	participantService participant.Service,
 ) Handler {
 	return &handler{
+		cfg:                cfg,
 		adminAuthService:   adminAuthService,
 		examService:        examService,
 		questionService:    questionService,
