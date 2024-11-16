@@ -178,7 +178,7 @@ const ReadQuestions = (props) => {
             <tr>
               <th>Serial</th>
               <th>Nama</th>
-              <th>Bisa Dikerjakan?</th>
+              <th>Sudah / Masih Bisa Dikerjakan?</th>
             </tr>
           </thead>
           <tbody>

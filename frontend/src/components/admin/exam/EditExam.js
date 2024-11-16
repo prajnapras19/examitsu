@@ -23,7 +23,7 @@ const EditExam = (props) => {
       required: true,
     },
     {
-      label: 'Bisa Dikerjakan?',
+      label: 'Sudah / Masih Bisa Dikerjakan?',
       name: 'is_open',
       type: 'boolean',
       defaultValue: false,
