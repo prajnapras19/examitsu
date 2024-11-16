@@ -127,6 +127,7 @@ func (h *handler) GetQuestions(c *gin.Context) {
 		})
 		return
 	}
+	pagination.Sort = "order_number ASC"
 
 	svcRes, err := h.questionService.GetQuestionsIDOnly(pagination, &filter)
 	if err != nil {
