@@ -41,7 +41,7 @@ func (s *service) CreateMcqOption(mcqOption *McqOption) (*McqOption, error) {
 func (s *service) GetMcqOptionsByQuestionID(questionID uint) ([]*McqOption, error) {
 	res, err := s.mcqOptionRepository.GetMcqOptionsByQuestionID(questionID)
 	if err != nil {
-		log.Println("[mcqoption][service][GetMcqOptionByQuestionID] failed to get question by id:", err.Error())
+		log.Println("[mcqoption][service][GetMcqOptionByQuestionID] failed to get mcqOption by question id:", err.Error())
 		if errors.Is(err, lib.ErrMcqOptionNotFound) {
 			return nil, err
 		}
