@@ -9,23 +9,35 @@ const AddQuestionCard = (props) => {
   const { auth, initiateTriggerRender } = props;
   const { examSerial } = useParams();
   const handleAddQuestion = async () => {
-    await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/questions`, {
-      exam_serial: examSerial,
-      data: '{}', // editorjs requirement
-    }, {
-      headers: {
-        Authorization: `Bearer ${auth.token}`,
-      },
-    });
-
-    toast.success('Soal berhasil ditambahkan!', {
-      position: "top-center",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+    try {
+      await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/questions`, {
+        exam_serial: examSerial,
+        data: '{}', // editorjs requirement
+      }, {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      });
+  
+      toast.success('Soal berhasil ditambahkan!', {
+        position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } catch (err) {
+      toast.error('Gagal menambahkan soal. Silakan coba beberapa saat lagi.', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    }
+    
     initiateTriggerRender();
   }
 
