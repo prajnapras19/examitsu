@@ -78,7 +78,6 @@ const EditQuestionModal = (props) => {
           pauseOnHover: true,
           draggable: true,
         });
-        onClose(); // Close the modal
       } catch (error) {
         toast.error(`Gagal mengubah soal. Silakan coba beberapa saat lagi.`, {
           position: "top-center",
@@ -112,6 +111,11 @@ const EditQuestionModal = (props) => {
         <Modal.Body>
           <h3>Soal</h3>
           <div id="editor" style={{ border: "1px solid #ccc", minHeight: "200px", padding: "10px" }}></div>
+          <br/>
+          <Button variant="primary" onClick={handleSubmit} disabled={loading}>
+            {loading ? "Menyimpan..." : "Simpan"}
+          </Button>
+          <hr/>
           <h3>Pilihan Jawaban</h3>
           <Button variant="primary" disabled={loading}>
             Tambah Pilihan Jawaban
@@ -120,9 +124,6 @@ const EditQuestionModal = (props) => {
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose} disabled={loading}>
             Batal
-          </Button>
-          <Button variant="primary" onClick={handleSubmit} disabled={loading}>
-            {loading ? "Menyimpan..." : "Simpan"}
           </Button>
         </Modal.Footer>
       </Modal>
