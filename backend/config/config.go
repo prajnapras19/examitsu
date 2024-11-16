@@ -10,9 +10,10 @@ import (
 )
 
 type Config struct {
-	RESTPort       int    `envconfig:"HTTP_PORT" default:"8080"`
-	AllowCORS      bool   `envconfig:"ALLOW_CORS" default:"true"`
-	SystemPassword string `envconfig:"SYSTEM_PASSWORD" default:""`
+	RESTPort                        int    `envconfig:"HTTP_PORT" default:"8080"`
+	AllowCORS                       bool   `envconfig:"ALLOW_CORS" default:"true"`
+	SystemPassword                  string `envconfig:"SYSTEM_PASSWORD" default:""`
+	ParticipantRandomPasswordLength int    `envconfig:"PARTICIPANT_RANDOM_PASSWORD_LENGTH" default:"8"`
 
 	MySQLConfig MySQLConfig
 	AuthConfig  AuthConfig

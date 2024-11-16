@@ -11,6 +11,7 @@ import (
 	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/exam"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/mcqoption"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/participant"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/question"
 )
 
@@ -27,12 +28,14 @@ func initDefault(cfg *config.Config) {
 	examRepository := exam.NewRepository(dbmysql.GetDB())
 	questionRepository := question.NewRepository(dbmysql.GetDB())
 	mcqOptionRepository := mcqoption.NewRepository(dbmysql.GetDB())
+	participantRepository := participant.NewRepository(dbmysql.GetDB())
 
 	// services
 	adminAuthService := adminauth.NewService(cfg)
 	examService := exam.NewService(examRepository)
 	questionService := question.NewService(questionRepository)
 	mcqOptionService := mcqoption.NewService(mcqOptionRepository)
+	participantService := participant.NewService(cfg, participantRepository)
 
 	// handlers
 	handler := api.NewHandler(
@@ -40,6 +43,7 @@ func initDefault(cfg *config.Config) {
 		examService,
 		questionService,
 		mcqOptionService,
+		participantService,
 	)
 
 	// routes
@@ -74,6 +78,11 @@ func initDefault(cfg *config.Config) {
 	adminGroup.POST("/mcq-options/question-id/:id", handler.GetMcqOptionsByQuestionID)
 	adminGroup.PATCH("/mcq-options/:id", handler.UpdateMcqOption)
 	adminGroup.DELETE("/mcq-options/:id", handler.DeleteMcqOptionByID)
+
+	adminGroup.PUT("/participants", handler.CreateParticipant)
+	adminGroup.POST("/participants/exam-serial/:serial", handler.GetParticipantsByExamSerial)
+	adminGroup.PATCH("/participants/:id", handler.UpdateParticipant)
+	adminGroup.DELETE("/participants/:id", handler.DeleteParticipantByID)
 
 	router.Run(fmt.Sprintf(":%d", cfg.RESTPort))
 }

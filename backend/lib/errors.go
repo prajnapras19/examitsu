@@ -12,6 +12,9 @@ var (
 	ErrFailedToParseJWTClaimsInContext = errors.New("failed to parse jwt claims in context")
 	ErrJWTClaimsNotFoundInContext      = errors.New("jwt claims not found in context")
 
+	// lib.random
+	ErrFailedToGenerateRandomString = errors.New("failed to generate random string")
+
 	// adminauth.service
 	ErrIncorrectPassword    = errors.New("incorrect password")
 	ErrSigningMethodInvalid = errors.New("signing method invalid")
@@ -45,4 +48,13 @@ var (
 	ErrFailedToGetMcqOptions   = errors.New("failed to get mcq options")
 	ErrFailedToUpdateMcqOption = errors.New("failed to update mcq option")
 	ErrFailedToDeleteMcqOption = errors.New("failed to delete mcq option")
+
+	// participant.repository
+	ErrParticipantNotFound = errors.New("participant not found")
+
+	// participant.service
+	ErrFailedToCreateParticipants = errors.New("failed to create participants")
+	ErrFailedToGetParticipants    = errors.New("failed to get participants")
+	ErrFailedToUpdateParticipant  = errors.New("failed to update participant")
+	ErrFailedToDeleteParticipant  = errors.New("failed to delete participant")
 )

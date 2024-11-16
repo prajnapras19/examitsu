@@ -8,8 +8,6 @@ const (
 
 	SystemUser = "SYSTEM"
 
-	ExamSerialLength = 24
-
 	ID          = "id"
 	Serial      = "serial"
 	ExamID      = "exam_id"
@@ -21,4 +19,6 @@ const (
 	DefaultValueQueryParameterPageSize = "10"
 	DefaultQueryPaginationPage         = 1
 	DefaultQueryPaginationPageSize     = 10
+
+	InsertionBatchSize = 100
 )
