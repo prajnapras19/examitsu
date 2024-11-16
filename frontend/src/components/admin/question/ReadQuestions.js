@@ -7,6 +7,7 @@ import { Container, Spinner, Table, Button } from 'react-bootstrap';
 import BackToHomepageCard from '../home/BackToHomepageCard';
 import AddQuestionCard from './AddQuestionCard';
 import DeleteConfirmationModal from '../../etc/DeleteConfirmationModal';
+import ReadExamsMenuCard from '../exam/ReadExamsMenuCard';
 
 const ReadQuestions = (props) => {
   const { auth } = props;
@@ -14,10 +15,8 @@ const ReadQuestions = (props) => {
   const navigate = useNavigate();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [data, setData] = useState({
-    exam: {},
-    questions: [],
-  });
+  const [exam, setExam] = useState({});
+  const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [triggerRender, setTriggerRender] = useState(false);
   
@@ -69,22 +68,31 @@ const ReadQuestions = (props) => {
     if (!auth.isLoggedIn) {
       navigate('/admin/login');
     }
+
+    const fetchExam = async() => {
+      try {
+        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/exams/${examSerial}`,
+          {}, {
+            headers: {
+              Authorization: `Bearer ${auth.token}`,
+            },
+          },
+        );
+
+        setExam(response.data.data);
+      } catch (err) {
+        console.error("Error fetching exam", err);
+        setError(err);
+      }
+    }
+    
+    fetchExam();
   }, [auth.loading, auth.isLoggedIn]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const responseExam = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/exams`, {
-            serial_equals_to: {
-              value: examSerial,
-            },
-        }, {
-          headers: {
-            'Authorization': `Bearer ${auth.token}`
-          },
-        });
-
-        const responseQuestions = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/questions?page=${currentPage}`,
+        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/questions?page=${currentPage}`,
           {
             exam_serial_equals_to: {
                 value: examSerial,
@@ -95,10 +103,8 @@ const ReadQuestions = (props) => {
             },
           },
         );
-        setData({
-            exam:  responseExam.data.data,
-            questions: responseQuestions.data.data,
-        });
+
+        setData(response.data.data);
       } catch (err) {
         console.error("Error fetching data", err);
         setError(err);
@@ -106,7 +112,7 @@ const ReadQuestions = (props) => {
     };
 
     fetchData();
-  }, [currentPage, auth.token, triggerRender]);
+  }, [currentPage, auth.token]);
 
   if (auth.loading) {
     return (
@@ -138,13 +144,35 @@ const ReadQuestions = (props) => {
       <Container className="text-center mt-5">
         <Container className="card-grid">
           <BackToHomepageCard></BackToHomepageCard>
+          <ReadExamsMenuCard></ReadExamsMenuCard>
           <AddQuestionCard></AddQuestionCard>
         </Container>
       </Container>
       <hr/>
 
+      <Container className="mt-5">
+        <h3>Ujian</h3>
+        <Table striped bordered hover className="text-center mt-5">
+          <thead>
+            <tr>
+              <th>Serial</th>
+              <th>Nama</th>
+              <th>Bisa Dikerjakan?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr key={exam.serial}>
+              <td>{exam.serial}</td>
+              <td>{exam.name}</td>
+              <td>{exam.is_open ? "Ya" : "Tidak"}</td>
+            </tr>
+          </tbody>
+        </Table>
+      </Container>
+      <hr/>
 
-      {data.questions.length === 0 ? (
+      <h3>Soal</h3>
+      {data.length === 0 ? (
         <Container className="text-center mt-5">
           {currentPage === 1 ? (
             <i>Tidak ada data ditemukan.</i>  
@@ -156,13 +184,15 @@ const ReadQuestions = (props) => {
         <Table striped bordered hover className="text-center mt-5">
           <thead>
             <tr>
-              <th>Nomor</th>
+              <th>ID</th>
+              <th>Nomor Soal</th>
               <th colSpan="3">Aksi</th>
             </tr>
           </thead>
           <tbody>
-            {data.questions.map((question, i) => (
+            {data.map((question, i) => (
               <tr key={question.id}>
+                <td className="p-3">{question.id}</td>
                 <td className="p-3">{10 * (currentPage - 1) + i + 1}</td>
                 <td>
                   <Button variant="primary" className="me-3" onClick={() => navigate(`/admin/questions/${question.serial}/edit`)}>Ubah</Button>
@@ -182,7 +212,7 @@ const ReadQuestions = (props) => {
         <Button variant="primary" onClick={handlePreviousPage} disabled={currentPage === 1} className="me-3">
           Halaman sebelumnya
         </Button>
-        <Button variant="primary" onClick={handleNextPage} disabled={data.questions.length === 0}>
+        <Button variant="primary" onClick={handleNextPage} disabled={data.length === 0}>
           Halaman berikutnya
         </Button>
       </Container>

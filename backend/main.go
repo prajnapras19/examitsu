@@ -56,6 +56,7 @@ func initDefault(cfg *config.Config) {
 
 	adminGroup.PUT("/exams", handler.CreateExam)
 	adminGroup.POST("/exams", handler.GetExams)
+	adminGroup.POST("/exams/:serial", handler.GetExamBySerial)
 	adminGroup.PATCH("/exams/:serial", handler.UpdateExam)
 	adminGroup.DELETE("/exams/:serial", handler.DeleteExamBySerial)
 

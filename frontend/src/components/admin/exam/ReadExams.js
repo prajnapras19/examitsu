@@ -142,7 +142,7 @@ const ReadExams = (props) => {
           </thead>
           <tbody>
             {data.map((exam) => (
-              <tr key={exam.id}>
+              <tr key={exam.serial}>
                 <td className="p-3">{exam.serial}</td>
                 <td className="p-3">{exam.name}</td>
                 <td className="p-3">{exam.is_open ? "Ya" : "Tidak"}</td>
