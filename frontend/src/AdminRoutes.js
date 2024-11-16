@@ -6,6 +6,7 @@ import NotFoundPage from './components/etc/404';
 import ReadExams from './components/admin/exam/ReadExams';
 import AddExam from './components/admin/exam/AddExam';
 import EditExam from './components/admin/exam/EditExam';
+import ReadQuestions from './components/admin/question/ReadQuestions';
 
 function AdminRoutes() {
   const adminAuth = useAdminAuth();
@@ -15,7 +16,8 @@ function AdminRoutes() {
       <Route path="/home" element={<Homepage auth={adminAuth}/>}/>
       <Route path="/exams" element={<ReadExams auth={adminAuth} />} />
       <Route path="/exams/new" element={<AddExam auth={adminAuth} />} />
-      <Route path="/exams/edit/:examSerial" element={<EditExam auth={adminAuth} />} />
+      <Route path="/exams/:examSerial/edit" element={<EditExam auth={adminAuth} />} />
+      <Route path="/exams/:examSerial/questions" element={<ReadQuestions auth={adminAuth} />} />
       <Route path="*" element={<NotFoundPage/>}/>
     </Routes>
   );
