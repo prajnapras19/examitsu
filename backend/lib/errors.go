@@ -36,4 +36,13 @@ var (
 	ErrFailedToGetQuestions    = errors.New("failed to get questions")
 	ErrFailedToUpdateQuestion  = errors.New("failed to update question")
 	ErrFailedToDeleteQuestion  = errors.New("failed to delete question")
+
+	// mcqoption.repository
+	ErrMcqOptionNotFound = errors.New("mcq option not found")
+
+	// mcqoption.service
+	ErrFailedToCreateMcqOption = errors.New("failed to create mcq option")
+	ErrFailedToGetMcqOptions   = errors.New("failed to get mcq options")
+	ErrFailedToUpdateMcqOption = errors.New("failed to update mcq option")
+	ErrFailedToDeleteMcqOption = errors.New("failed to delete mcq option")
 )

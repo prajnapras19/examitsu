@@ -57,7 +57,7 @@ func (s *service) GetExamBySerial(serial string) (*Exam, error) {
 func (s *service) GetExams(pagination *lib.QueryPagination, filter *GetExamsFilter) ([]*Exam, error) {
 	res, err := s.examRepository.GetExams(pagination, filter)
 	if err != nil {
-		log.Println("[pallet][service][GetExams] failed to get exams:", err.Error())
+		log.Println("[exam][service][GetExams] failed to get exams:", err.Error())
 		return nil, lib.ErrFailedToGetExams
 	}
 	return res, nil

@@ -43,8 +43,8 @@ func (s *service) CreateQuestion(question *Question) (*Question, error) {
 func (s *service) GetQuestionByID(id uint) (*Question, error) {
 	res, err := s.questionRepository.GetQuestionByID(id)
 	if err != nil {
-		log.Println("[exam][service][GetQuestionByID] failed to get exam by id:", err.Error())
-		if errors.Is(err, lib.ErrExamNotFound) {
+		log.Println("[question][service][GetQuestionByID] failed to get question by id:", err.Error())
+		if errors.Is(err, lib.ErrQuestionNotFound) {
 			return nil, err
 		}
 		return nil, lib.ErrFailedToGetQuestionByID
@@ -55,7 +55,7 @@ func (s *service) GetQuestionByID(id uint) (*Question, error) {
 func (s *service) GetQuestionsIDOnly(pagination *lib.QueryPagination, filter *GetQuestionsFilter) ([]*Question, error) {
 	res, err := s.questionRepository.GetQuestionsIDOnly(pagination, filter)
 	if err != nil {
-		log.Println("[pallet][service][GetQuestionsIDOnly] failed to get questions:", err.Error())
+		log.Println("[question][service][GetQuestionsIDOnly] failed to get questions:", err.Error())
 		return nil, lib.ErrFailedToGetQuestions
 	}
 	return res, nil
@@ -64,7 +64,7 @@ func (s *service) GetQuestionsIDOnly(pagination *lib.QueryPagination, filter *Ge
 func (s *service) GetQuestions(pagination *lib.QueryPagination, filter *GetQuestionsFilter) ([]*Question, error) {
 	res, err := s.questionRepository.GetQuestions(pagination, filter)
 	if err != nil {
-		log.Println("[pallet][service][GetQuestions] failed to get questions:", err.Error())
+		log.Println("[question][service][GetQuestions] failed to get questions:", err.Error())
 		return nil, lib.ErrFailedToGetQuestions
 	}
 	return res, nil
