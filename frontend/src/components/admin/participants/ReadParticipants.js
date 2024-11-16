@@ -1,39 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Container, Spinner, Table, Button } from 'react-bootstrap';
 import BackToHomepageCard from '../home/BackToHomepageCard';
-import AddExamCard from './AddExamCard';
 import DeleteConfirmationModal from '../../etc/DeleteConfirmationModal';
+import ReadExamsMenuCard from '../exam/ReadExamsMenuCard';
 
-const ReadExams = (props) => {
+const ReadParticipants = (props) => {
   const { auth } = props;
+  const { examSerial } = useParams();
   const navigate = useNavigate();
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const [exam, setExam] = useState({});
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [triggerRender, setTriggerRender] = useState(false);
-  
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deletedExamSerial, setDeletedExamSerial] = useState("");
-  const handleShowDeleteModal = (examSerial) => {
-    setDeletedExamSerial(examSerial);
+  const [deletedQuestionId, setDeletedQuestionId] = useState(0);
+  const handleShowDeleteModal = (participantId) => {
+    setDeletedQuestionId(participantId);
     setShowDeleteModal(true);
   }
   const handleCloseDeleteModal = () => {
-    setDeletedExamSerial(0);
+    setDeletedQuestionId(0);
     setShowDeleteModal(false);
   }
   const handleDelete = () => {
-    axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/exams/${deletedExamSerial}`, { 
+    axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/participants/${deletedQuestionId}`, { 
       headers: {
         'Authorization': `Bearer ${auth.token}`
       },
     })
     .then(response => {
-      toast.success('Ujian berhasil dihapus!', {
+      toast.success('Soal berhasil dihapus!', {
         position: "top-center",
         autoClose: 3000,
         hideProgressBar: false,
@@ -45,7 +47,7 @@ const ReadExams = (props) => {
       handleCloseDeleteModal();
     })
     .catch(err => {
-      toast.error(`Gagal menghapus ujian. Silakan coba beberapa saat lagi.`, {
+      toast.error(`Gagal menghapus peserta. Silakan coba beberapa saat lagi.`, {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: false,
@@ -64,18 +66,38 @@ const ReadExams = (props) => {
     if (!auth.isLoggedIn) {
       navigate('/admin/login');
     }
-  }, [auth.loading, auth.isLoggedIn]);
 
-  useEffect(() => {
-    const fetchData = async () => {
+    const fetchExam = async() => {
       try {
-        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/exams?page=${currentPage}`,
+        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/exams/${examSerial}`,
           {}, {
             headers: {
               Authorization: `Bearer ${auth.token}`,
             },
           },
         );
+
+        setExam(response.data.data);
+      } catch (err) {
+        console.error("Error fetching exam", err);
+        setError(err);
+      }
+    }
+    
+    fetchExam();
+  }, [auth.loading, auth.isLoggedIn]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/participants/exam-serial/${examSerial}`,
+          {}, {
+            headers: {
+              Authorization: `Bearer ${auth.token}`,
+            },
+          },
+        );
+
         setData(response.data.data);
       } catch (err) {
         console.error("Error fetching data", err);
@@ -84,7 +106,7 @@ const ReadExams = (props) => {
     };
 
     fetchData();
-  }, [currentPage, auth.token, triggerRender]);
+  }, [auth.token, triggerRender]);
 
   if (auth.loading) {
     return (
@@ -99,78 +121,71 @@ const ReadExams = (props) => {
     navigate('/500');
   }
 
-  const handleNextPage = () => {
-    setCurrentPage(currentPage + 1);
-  };
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
   return (
     <Container>
-      <h1 className="my-4">Daftar Ujian</h1>
+      <h1 className="my-4">Daftar Peserta</h1>
       <hr/>
       <Container className="text-center mt-5">
         <Container className="card-grid">
           <BackToHomepageCard></BackToHomepageCard>
-          <AddExamCard></AddExamCard>
+          <ReadExamsMenuCard></ReadExamsMenuCard>
         </Container>
       </Container>
       <hr/>
 
-
-      {data.length === 0 ? (
-        <Container className="text-center mt-5">
-          {currentPage === 1 ? (
-            <i>Tidak ada data ditemukan.</i>  
-          ): (
-            <i>Tidak ada data ditemukan pada halaman ini. Silakan coba halaman sebelumnya.</i>
-          )}
-        </Container>
-      ) : (
+      <Container className="mt-5">
+        <h3>Ujian</h3>
         <Table striped bordered hover className="text-center mt-5">
           <thead>
             <tr>
               <th>Serial</th>
               <th>Nama</th>
               <th>Sudah / Masih Bisa Dikerjakan?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr key={exam.serial}>
+              <td>{exam.serial}</td>
+              <td>{exam.name}</td>
+              <td>{exam.is_open ? "Ya" : "Tidak"}</td>
+            </tr>
+          </tbody>
+        </Table>
+      </Container>
+      <hr/>
+
+      <h3>Peserta</h3>
+      {data.length === 0 ? (
+        <Container className="text-center mt-5">
+          <i>Tidak ada data ditemukan.</i>  
+        </Container>
+      ) : (
+        <Table striped bordered hover className="text-center mt-5">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nama</th>
+              <th>Kata Sandi</th>
               <th colSpan="3">Aksi</th>
             </tr>
           </thead>
           <tbody>
-            {data.map((exam) => (
-              <tr key={exam.serial}>
-                <td className="p-3">{exam.serial}</td>
-                <td className="p-3">{exam.name}</td>
-                <td className="p-3">{exam.is_open ? "Ya" : "Tidak"}</td>
+            {data.map((participant, i) => (
+              <tr key={participant.id}>
+                <td className="p-3">{i+1}</td>
+                <td className="p-3">{participant.name}</td>
+                <td className="p-3">{participant.password}</td>
                 <td>
-                  <Button variant="primary" className="me-3" onClick={() => navigate(`/admin/exams/${exam.serial}/edit`)}>Ubah</Button>
+                <Button variant="primary" className="me-3" onClick={() => navigate(`/admin/exams/${exam.serial}/participants/${participant.id}/edit`)}>Ubah</Button>
                 </td>
                 <td>
-                  <Button variant="secondary" className="me-3" onClick={() => navigate(`/admin/exams/${exam.serial}/questions`)}>Lihat Daftar Soal</Button>
-                </td>
-                <td>
-                  <Button variant="secondary" className="me-3" onClick={() => navigate(`/admin/exams/${exam.serial}/participants`)}>Lihat Daftar Peserta</Button>
-                </td>
-                <td>
-                  <Button variant="danger" onClick={() => handleShowDeleteModal(exam.serial)}>Hapus</Button>
+                  <Button variant="danger" onClick={() => handleShowDeleteModal(participant.id)}>Hapus</Button>
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
       )}
-      <Container className="d-flex mt-3">
-        <Button variant="primary" onClick={handlePreviousPage} disabled={currentPage === 1} className="me-3">
-          Halaman sebelumnya
-        </Button>
-        <Button variant="primary" onClick={handleNextPage} disabled={data.length === 0}>
-          Halaman berikutnya
-        </Button>
-      </Container>
       
       <DeleteConfirmationModal
         show={showDeleteModal}
@@ -181,4 +196,4 @@ const ReadExams = (props) => {
   );
 }
 
-export default ReadExams;
+export default ReadParticipants;
