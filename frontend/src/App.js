@@ -5,14 +5,18 @@ import { ToastContainer } from 'react-toastify';
 import NotFoundPage from './components/etc/404';
 import ScrollToTop from './components/etc/ScrollToTop';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import useAdminAuth from './components/admin/hooks/useAdminAuth';
+import Login from './components/admin/auth/Login';
 
 function App() {
+  const adminAuth = useAdminAuth();
   return (
     <div className="App my-4">
       <Router>
         <ScrollToTop />
         <ToastContainer />
         <Routes>
+          <Route path="/admin/login" element={<Login auth={adminAuth}/>}/>
           <Route path="*" element={<NotFoundPage/>}/>
         </Routes>
       </Router>

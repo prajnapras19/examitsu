@@ -20,8 +20,8 @@ const useAdminAuth = () => {
       return;
     }
 
-    await axios.post(
-      `${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/login`,
+    await axios.get(
+      `${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/is-logged-in`,
       {},
       {
         headers: {
@@ -61,7 +61,7 @@ const useAdminAuth = () => {
   return{
     isLoggedIn: data.isLoggedIn,
     token: localStorage.getItem('authToken'),
-    loading: loading,
+    loading: data.loading,
     setLoading: setLoading,
   }
 }
