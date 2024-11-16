@@ -10,6 +10,7 @@ const useAdminAuth = () => {
 
   const isAuth = async() => {
     const token = localStorage.getItem('authToken');
+    console.log("token", token);
 
     if (!token) {
       // No token means the user is not logged in
@@ -22,12 +23,12 @@ const useAdminAuth = () => {
 
     await axios.get(
       `${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/is-logged-in`,
-      {},
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
+      }
+    )
     .then(res => {
       if (res.status === 200) {
         setData({
