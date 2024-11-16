@@ -178,6 +178,38 @@ const EditQuestionModal = (props) => {
       }
     }
 
+    const handleAddMcqOption = async () => {
+      try {
+        const response = await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/mcq-options`, {
+          question_id: questionId,
+        }, {
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        });
+
+        setMcqOptions((prev) => prev.concat(response.data.data));
+    
+        toast.success('Pilihan jawaban berhasil ditambahkan!', {
+          position: "top-center",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      } catch (err) {
+        toast.success('Gagal menambahkan pilihan jawaban. Silakan coba beberapa saat lagi.', {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
+    }
+
     return (
       <Modal show={show} onHide={handleClose} size="lg" centered>
         <Modal.Header closeButton>
@@ -192,9 +224,6 @@ const EditQuestionModal = (props) => {
           </Button>
           <hr/>
           <h3>Pilihan Jawaban</h3>
-          <Button variant="primary">
-            Tambah Pilihan Jawaban
-          </Button>
           <hr/>
           {mcqOptions.map((mcqOption, i) => (
             <>
@@ -226,10 +255,13 @@ const EditQuestionModal = (props) => {
               <hr/>
             </>
           ))}
+          <Button variant="primary" onClick={handleAddMcqOption}>
+            Tambah Pilihan Jawaban
+          </Button>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
-            Batal
+            Tutup
           </Button>
         </Modal.Footer>
       </Modal>
