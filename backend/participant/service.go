@@ -11,6 +11,7 @@ import (
 type Service interface {
 	CreateParticipants(participants []*Participant) ([]*Participant, error)
 	GetParticipantsByExamID(examID uint) ([]*Participant, error)
+	GetParticipantByID(id uint) (*Participant, error)
 	UpdateParticipant(participant *Participant) error
 	DeleteParticipantByID(id uint) error
 }
@@ -61,6 +62,18 @@ func (s *service) GetParticipantsByExamID(examID uint) ([]*Participant, error) {
 			return nil, err
 		}
 		return nil, lib.ErrFailedToGetParticipants
+	}
+	return res, nil
+}
+
+func (s *service) GetParticipantByID(id uint) (*Participant, error) {
+	res, err := s.participantRepository.GetParticipantByID(id)
+	if err != nil {
+		log.Println("[participant][service][GetQuestionByID] failed to get participant by id:", err.Error())
+		if errors.Is(err, lib.ErrQuestionNotFound) {
+			return nil, err
+		}
+		return nil, lib.ErrFailedToGetQuestionByID
 	}
 	return res, nil
 }

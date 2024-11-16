@@ -1,6 +1,7 @@
 package participant
 
 import (
+	"errors"
 	"log"
 
 	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
@@ -11,6 +12,7 @@ import (
 type Repository interface {
 	CreateParticipants(participants []*Participant) ([]*Participant, error)
 	GetParticipantsByExamID(examID uint) ([]*Participant, error)
+	GetParticipantByID(id uint) (*Participant, error)
 	// TODO: get by exam id, name, and password (participant side)
 	UpdateParticipant(participant *Participant) error
 	DeleteParticipantByID(id uint) error
@@ -35,6 +37,18 @@ func (r *repository) GetParticipantsByExamID(examID uint) ([]*Participant, error
 	var res []*Participant
 	err := r.db.Where("exam_id = ?", examID).Find(&res).Error
 	return res, err
+}
+
+func (r *repository) GetParticipantByID(id uint) (*Participant, error) {
+	var question Participant
+	err := r.db.Where("id = ?", id).First(&question).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, lib.ErrParticipantNotFound
+		}
+		return nil, err
+	}
+	return &question, nil
 }
 
 func (r *repository) UpdateParticipant(participant *Participant) error {

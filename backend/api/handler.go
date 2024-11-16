@@ -33,6 +33,7 @@ type Handler interface {
 
 	CreateParticipant(*gin.Context)
 	GetParticipantsByExamSerial(*gin.Context)
+	GetParticipantByID(*gin.Context)
 	UpdateParticipant(*gin.Context)
 	DeleteParticipantByID(*gin.Context)
 }

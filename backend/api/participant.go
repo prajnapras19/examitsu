@@ -115,6 +115,24 @@ func (h *handler) GetParticipantsByExamSerial(c *gin.Context) {
 	})
 }
 
+func (h *handler) GetParticipantByID(c *gin.Context) {
+	id, _ := strconv.ParseUint(c.Param(constants.ID), 10, 64)
+
+	svcRes, err := h.participantService.GetParticipantByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	res := h.MapParticipantEntityToParticipantData(svcRes)
+	c.JSON(http.StatusOK, lib.BaseResponse{
+		Message: constants.Success,
+		Data:    res,
+	})
+}
+
 func (h *handler) UpdateParticipant(c *gin.Context) {
 	var req UpdateParticipantRequest
 

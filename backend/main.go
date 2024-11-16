@@ -82,6 +82,7 @@ func initDefault(cfg *config.Config) {
 
 	adminGroup.PUT("/participants", handler.CreateParticipant)
 	adminGroup.POST("/participants/exam-serial/:serial", handler.GetParticipantsByExamSerial)
+	adminGroup.POST("/participants/id/:id", handler.GetParticipantByID)
 	adminGroup.PATCH("/participants/:id", handler.UpdateParticipant)
 	adminGroup.DELETE("/participants/:id", handler.DeleteParticipantByID)
 
