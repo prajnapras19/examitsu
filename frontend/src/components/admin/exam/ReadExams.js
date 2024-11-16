@@ -111,7 +111,7 @@ const ReadExams = (props) => {
 
   return (
     <Container>
-      <h1 className="my-4">Daftar Palet</h1>
+      <h1 className="my-4">Daftar Ujian</h1>
       <hr/>
       <Container className="text-center mt-5">
         <Container className="card-grid">
@@ -150,7 +150,7 @@ const ReadExams = (props) => {
                   <Button variant="primary" className="me-3" onClick={() => navigate(`/admin/exams/edit/${exam.serial}`)}>Ubah</Button>
                 </td>
                 <td>
-                <Button variant="secondary" className="me-3" onClick={() => navigate(`/admin/exams/edit/${exam.serial}/questions`)}>Lihat Daftar Pertanyaan</Button>
+                <Button variant="secondary" className="me-3" onClick={() => navigate(`/admin/exams/edit/${exam.serial}/questions`)}>Lihat Soal</Button>
                 </td>
                 <td>
                   <Button variant="danger" onClick={() => handleShowDeleteModal(exam.serial)}>Hapus</Button>
