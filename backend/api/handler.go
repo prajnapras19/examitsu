@@ -12,7 +12,7 @@ type Handler interface {
 
 	CreateExam(*gin.Context)
 	GetExamBySerial(*gin.Context)
-	GetAllExams(*gin.Context)
+	GetExams(c *gin.Context)
 	UpdateExam(*gin.Context)
 	DeleteExamBySerial(*gin.Context)
 }

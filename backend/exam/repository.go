@@ -11,7 +11,7 @@ import (
 type Repository interface {
 	CreateExam(exam *Exam) (*Exam, error)
 	GetExamBySerial(serial string) (*Exam, error)
-	GetAllExams() ([]*Exam, error)
+	GetExams(pagination *lib.QueryPagination, filter *GetExamsFilter) ([]*Exam, error)
 	UpdateExam(exam *Exam) error
 	DeleteExamBySerial(serial string) error
 }
@@ -43,13 +43,10 @@ func (r *repository) GetExamBySerial(serial string) (*Exam, error) {
 	return &exam, nil
 }
 
-func (r *repository) GetAllExams() ([]*Exam, error) {
-	var exams []*Exam
-	err := r.db.Find(&exams).Error
-	if err != nil {
-		return nil, err
-	}
-	return exams, nil
+func (r *repository) GetExams(pagination *lib.QueryPagination, filter *GetExamsFilter) ([]*Exam, error) {
+	var res []*Exam
+	err := r.db.Scopes(append(filter.Scope(), pagination.Scope())...).Find(&res).Error
+	return res, err
 }
 
 func (r *repository) UpdateExam(exam *Exam) error {

@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -84,15 +85,27 @@ func (h *handler) GetExamBySerial(c *gin.Context) {
 	})
 }
 
-func (h *handler) GetAllExams(c *gin.Context) {
-	svcRes, err := h.examService.GetAllExams()
+func (h *handler) GetExams(c *gin.Context) {
+	var filter exam.GetExamsFilter
+
+	if err := c.ShouldBind(&filter); err != nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrFailedToParseRequest.Error(),
+		})
+		return
+	}
+
+	pagination, err := lib.GetQueryPaginationFromContext(c)
 	if err != nil {
-		if errors.Is(err, lib.ErrExamNotFound) {
-			c.JSON(http.StatusNotFound, lib.BaseResponse{
-				Message: err.Error(),
-			})
-			return
-		}
+		log.Printf("[handler][exam][GetExams] get query pagination error: %s", err.Error())
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrFailedToParseRequest.Error(),
+		})
+		return
+	}
+
+	svcRes, err := h.examService.GetExams(pagination, &filter)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
 			Message: err.Error(),
 		})

@@ -4,14 +4,14 @@ import (
 	"errors"
 	"log"
 
-	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
+	"github.com/google/uuid"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
 )
 
 type Service interface {
 	CreateExam(exam *Exam) (*Exam, error)
 	GetExamBySerial(serial string) (*Exam, error)
-	GetAllExams() ([]*Exam, error)
+	GetExams(pagination *lib.QueryPagination, filter *GetExamsFilter) ([]*Exam, error)
 	UpdateExam(exam *Exam) error
 	DeleteExamBySerial(serial string) error
 }
@@ -31,7 +31,7 @@ func NewService(
 func (s *service) CreateExam(exam *Exam) (*Exam, error) {
 	var err error
 
-	exam.Serial, err = lib.GenerateRandomString(constants.ExamSerialLength)
+	exam.Serial = uuid.New().String()
 
 	res, err := s.examRepository.CreateExam(exam)
 	if err != nil {
@@ -54,11 +54,11 @@ func (s *service) GetExamBySerial(serial string) (*Exam, error) {
 	return res, nil
 }
 
-func (s *service) GetAllExams() ([]*Exam, error) {
-	res, err := s.examRepository.GetAllExams()
+func (s *service) GetExams(pagination *lib.QueryPagination, filter *GetExamsFilter) ([]*Exam, error) {
+	res, err := s.examRepository.GetExams(pagination, filter)
 	if err != nil {
-		log.Println("[exam][service][GetAllExams] failed to get all exams:", err.Error())
-		return nil, lib.ErrFailedToGetAllExams
+		log.Println("[pallet][service][GetExams] failed to get exams:", err.Error())
+		return nil, lib.ErrFailedToGetExams
 	}
 	return res, nil
 }
