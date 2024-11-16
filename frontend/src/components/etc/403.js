@@ -14,9 +14,6 @@ const ForbiddenPage = () => {
           <p className="lead">
             Mohon maaf, Anda tidak memiliki akses ke halaman ini.
           </p>
-          <Button variant="primary" href="/">
-            Kembali ke halaman utama
-          </Button>
         </Col>
       </Row>
     </Container>

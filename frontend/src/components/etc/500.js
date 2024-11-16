@@ -14,9 +14,6 @@ const InternalServerErrorPage = () => {
           <p className="lead">
             Mohon maaf, sedang terjadi masalah pada server. Silakan coba beberapa saat lagi.
           </p>
-          <Button variant="primary" href="/">
-            Kembali ke halaman utama
-          </Button>
         </Col>
       </Row>
     </Container>

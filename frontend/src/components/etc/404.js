@@ -14,9 +14,6 @@ const NotFoundPage = () => {
           <p className="lead">
             Halaman yang ingin Anda tuju tidak ditemukan.
           </p>
-          <Button variant="primary" href="/">
-            Kembali ke halaman utama
-          </Button>
         </Col>
       </Row>
     </Container>

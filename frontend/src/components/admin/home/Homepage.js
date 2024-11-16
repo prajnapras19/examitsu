@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Spinner } from 'react-bootstrap';
 import LogoutCard from '../auth/LogoutCard';
+import ReadExamsMenuCard from '../exam/ReadExamsMenuCard';
 
 const Homepage = (props) => {
   const { auth } = props;
@@ -35,6 +36,7 @@ const Homepage = (props) => {
       <hr/>
       <Container className="card-grid text-center mt-5">
         <LogoutCard auth={auth}></LogoutCard>
+        <ReadExamsMenuCard></ReadExamsMenuCard>
       </Container>
     </Container>
   );
