@@ -19,7 +19,7 @@ const AddExam = (props) => {
       defaultValue: '',
     },
     {
-      label: 'Sudah Bisa Dikerjakan?',
+      label: 'Bisa Dikerjakan??',
       name: 'is_open',
       type: 'boolean',
       defaultValue: false,
