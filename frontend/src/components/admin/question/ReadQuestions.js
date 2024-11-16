@@ -219,9 +219,6 @@ const ReadQuestions = (props) => {
                   <Button variant="primary" className="me-3" onClick={() => handleShowEditModal(question.id)}>Ubah</Button>
                 </td>
                 <td>
-                <Button variant="secondary" className="me-3" onClick={() => navigate(`/admin/questions/${question.id}/preview`)}>Pratinjau</Button>
-                </td>
-                <td>
                   <Button variant="danger" onClick={() => handleShowDeleteModal(question.id)}>Hapus</Button>
                 </td>
               </tr>
