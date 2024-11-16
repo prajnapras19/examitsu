@@ -1,6 +1,7 @@
 package question
 
 import (
+	"errors"
 	"log"
 
 	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
@@ -10,6 +11,8 @@ import (
 
 type Repository interface {
 	CreateQuestion(question *Question) (*Question, error)
+	GetQuestionsIDOnly(pagination *lib.QueryPagination, filter *GetQuestionsFilter) ([]*Question, error)
+	GetQuestionByID(id uint) (*Question, error)
 	GetQuestions(pagination *lib.QueryPagination, filter *GetQuestionsFilter) ([]*Question, error)
 	UpdateQuestionDataByID(question *Question) error
 	DeleteQuestionByID(id uint) error
@@ -36,6 +39,24 @@ func (r *repository) CreateQuestion(question *Question) (*Question, error) {
 		return nil
 	})
 	return question, err
+}
+
+func (r *repository) GetQuestionByID(id uint) (*Question, error) {
+	var question Question
+	err := r.db.Where("id = ?", id).First(&question).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, lib.ErrQuestionNotFound
+		}
+		return nil, err
+	}
+	return &question, nil
+}
+
+func (r *repository) GetQuestionsIDOnly(pagination *lib.QueryPagination, filter *GetQuestionsFilter) ([]*Question, error) {
+	var res []*Question
+	err := r.db.Select("id").Scopes(append(filter.Scope(), pagination.Scope())...).Find(&res).Error
+	return res, err
 }
 
 func (r *repository) GetQuestions(pagination *lib.QueryPagination, filter *GetQuestionsFilter) ([]*Question, error) {

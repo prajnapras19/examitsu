@@ -20,7 +20,11 @@ import (
 type CreateQuestionRequest struct {
 	ExamSerial string `json:"exam_serial" binding:"required"`
 	ExamID     uint   `json:"-"`
-	Data       string `json:"data" binding:"required"`
+	Data       string `json:"data"`
+}
+
+type QuestionDataIDOnly struct {
+	ID uint `json:"id"`
 }
 
 type QuestionData struct {
@@ -30,7 +34,7 @@ type QuestionData struct {
 
 type UpdateQuestionRequest struct {
 	ID   uint   `json:"-"`
-	Data string `json:"data" binding:"required"`
+	Data string `json:"data"`
 }
 
 /***
@@ -96,16 +100,35 @@ func (h *handler) GetQuestions(c *gin.Context) {
 		return
 	}
 
+	if filter.ExamSerialEqualsTo != nil {
+		exam, err := h.examService.GetExamBySerial(filter.ExamSerialEqualsTo.Value)
+		if err != nil {
+			if errors.Is(err, lib.ErrExamNotFound) {
+				c.JSON(http.StatusNotFound, lib.BaseResponse{
+					Message: err.Error(),
+				})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		filter.ExamIDEqualsTo = &lib.QueryFiltersEqualToUint{
+			Value: exam.ID,
+		}
+	}
+
 	pagination, err := lib.GetQueryPaginationFromContext(c)
 	if err != nil {
-		log.Printf("[handler][question][GetQuestions] get query pagination error: %s", err.Error())
+		log.Printf("[handler][question][GetQuestionsIDOnly] get query pagination error: %s", err.Error())
 		c.JSON(http.StatusBadRequest, lib.BaseResponse{
 			Message: lib.ErrFailedToParseRequest.Error(),
 		})
 		return
 	}
 
-	svcRes, err := h.questionService.GetQuestions(pagination, &filter)
+	svcRes, err := h.questionService.GetQuestionsIDOnly(pagination, &filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
 			Message: err.Error(),
@@ -113,7 +136,25 @@ func (h *handler) GetQuestions(c *gin.Context) {
 		return
 	}
 
-	res := h.MapQuestionEntityListToQuestionDataList(svcRes)
+	res := h.MapQuestionEntityListToQuestionDataIDOnlyList(svcRes)
+	c.JSON(http.StatusOK, lib.BaseResponse{
+		Message: constants.Success,
+		Data:    res,
+	})
+}
+
+func (h *handler) GetQuestionByID(c *gin.Context) {
+	id, _ := strconv.ParseUint(c.Param(constants.ID), 10, 64)
+
+	svcRes, err := h.questionService.GetQuestionByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	res := h.MapQuestionEntityToQuestionData(svcRes)
 	c.JSON(http.StatusOK, lib.BaseResponse{
 		Message: constants.Success,
 		Data:    res,
@@ -202,4 +243,18 @@ func (h *handler) MapUpdateQuestionRequestToQuestionEntity(req *UpdateQuestionRe
 		},
 		Data: req.Data,
 	}
+}
+
+func (h *handler) MapQuestionEntityToQuestionDataIDOnly(svcRes *question.Question) *QuestionDataIDOnly {
+	return &QuestionDataIDOnly{
+		ID: svcRes.ID,
+	}
+}
+
+func (h *handler) MapQuestionEntityListToQuestionDataIDOnlyList(svcRes []*question.Question) []*QuestionDataIDOnly {
+	res := []*QuestionDataIDOnly{}
+	for _, obj := range svcRes {
+		res = append(res, h.MapQuestionEntityToQuestionDataIDOnly(obj))
+	}
+	return res
 }

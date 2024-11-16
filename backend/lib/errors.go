@@ -31,8 +31,9 @@ var (
 	ErrQuestionNotFound = errors.New("question not found")
 
 	// question.service
-	ErrFailedToCreateQuestion = errors.New("failed to create question")
-	ErrFailedToGetQuestions   = errors.New("failed to get questions")
-	ErrFailedToUpdateQuestion = errors.New("failed to update question")
-	ErrFailedToDeleteQuestion = errors.New("failed to delete question")
+	ErrFailedToCreateQuestion  = errors.New("failed to create question")
+	ErrFailedToGetQuestionByID = errors.New("failed to get question by id")
+	ErrFailedToGetQuestions    = errors.New("failed to get questions")
+	ErrFailedToUpdateQuestion  = errors.New("failed to update question")
+	ErrFailedToDeleteQuestion  = errors.New("failed to delete question")
 )

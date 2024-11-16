@@ -9,6 +9,8 @@ import (
 
 type Service interface {
 	CreateQuestion(question *Question) (*Question, error)
+	GetQuestionByID(id uint) (*Question, error)
+	GetQuestionsIDOnly(pagination *lib.QueryPagination, filter *GetQuestionsFilter) ([]*Question, error)
 	GetQuestions(pagination *lib.QueryPagination, filter *GetQuestionsFilter) ([]*Question, error)
 	UpdateQuestion(question *Question) error
 	DeleteQuestionByID(id uint) error
@@ -36,6 +38,27 @@ func (s *service) CreateQuestion(question *Question) (*Question, error) {
 	}
 
 	return res, err
+}
+
+func (s *service) GetQuestionByID(id uint) (*Question, error) {
+	res, err := s.questionRepository.GetQuestionByID(id)
+	if err != nil {
+		log.Println("[exam][service][GetQuestionByID] failed to get exam by id:", err.Error())
+		if errors.Is(err, lib.ErrExamNotFound) {
+			return nil, err
+		}
+		return nil, lib.ErrFailedToGetQuestionByID
+	}
+	return res, nil
+}
+
+func (s *service) GetQuestionsIDOnly(pagination *lib.QueryPagination, filter *GetQuestionsFilter) ([]*Question, error) {
+	res, err := s.questionRepository.GetQuestionsIDOnly(pagination, filter)
+	if err != nil {
+		log.Println("[pallet][service][GetQuestionsIDOnly] failed to get questions:", err.Error())
+		return nil, lib.ErrFailedToGetQuestions
+	}
+	return res, nil
 }
 
 func (s *service) GetQuestions(pagination *lib.QueryPagination, filter *GetQuestionsFilter) ([]*Question, error) {
