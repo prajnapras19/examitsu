@@ -136,6 +136,7 @@ const ReadExams = (props) => {
             <tr>
               <th>Serial</th>
               <th>Nama</th>
+              <th>Sudah Bisa Dikerjakan?</th>
               <th></th>
             </tr>
           </thead>
@@ -144,6 +145,7 @@ const ReadExams = (props) => {
               <tr key={exam.id}>
                 <td className="p-3">{exam.serial}</td>
                 <td className="p-3">{exam.name}</td>
+                <td className="p-3">{exam.is_open ? "Ya" : "Tidak"}</td>
                 <td style={{width: '15%'}}>
                   <Button variant="primary" className="me-3" onClick={() => navigate(`/admin/exams/edit/${exam.serial}`)}>Ubah</Button>
                   <Button variant="danger" onClick={() => handleShowDeleteModal(exam.serial)}>Hapus</Button>

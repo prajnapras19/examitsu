@@ -16,16 +16,29 @@ const AddExam = (props) => {
       name: 'name',
       type: 'text',
       required: true,
+      defaultValue: '',
+    },
+    {
+      label: 'Sudah Bisa Dikerjakan?',
+      name: 'is_open',
+      type: 'boolean',
+      defaultValue: false,
     },
   ]
 
   const [formData, setFormData] = useState(
-    fields.reduce((acc, field) => ({ ...acc, [field.name]: '' }), {})
+    fields.reduce((acc, field) => ({ ...acc, [field.name]: field.defaultValue }), {})
   );
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const { name, type } = e.target;
+    if (type === 'checkbox') {
+      const { checked } = e.target;
+      setFormData({ ...formData, [name]: checked });
+    } else {
+      const { value } = e.target;
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   useEffect(() => {
@@ -97,15 +110,42 @@ const AddExam = (props) => {
         {fields.map((field) => (
           <Form.Group className="my-3" controlId={field.name} key={field.name}>
             <Form.Label><b>{field.label}{field.required ? <span> (harus diisi)</span> : ''}</b></Form.Label>
-            <Form.Control
-              type={field.type}
-              name={field.name}
-              value={formData[field.name]}
-              onChange={handleInputChange}
-              required={field.required}
-              placeholder={`Masukkan ${field.label}`}
-              autoComplete='off'
-            />
+            {
+              field.type === 'float'
+              ? (
+                <Form.Control
+                  type='number'
+                  min={field.minValue}
+                  step={field.step}
+                  name={field.name}
+                  value={formData[field.name]}
+                  onChange={handleInputChange}
+                  required={field.required}
+                  placeholder={`Masukkan ${field.label}`}
+                  autoComplete='off'
+                />
+              )
+              : field.type === 'boolean'
+              ? (
+                <Form.Check
+                  type="switch"
+                  name={field.name}
+                  checked={formData[field.name]}
+                  onChange={handleInputChange}
+                />
+              )
+              : (
+                <Form.Control
+                  type={field.type}
+                  name={field.name}
+                  value={formData[field.name]}
+                  onChange={handleInputChange}
+                  required={field.required}
+                  placeholder={`Masukkan ${field.label}`}
+                  autoComplete='off'
+                />
+              )
+            }
           </Form.Group>
         ))}
         <Button variant="primary" type="submit" className="mt-3">

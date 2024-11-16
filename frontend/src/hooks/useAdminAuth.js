@@ -10,7 +10,6 @@ const useAdminAuth = () => {
 
   const isAuth = async() => {
     const token = localStorage.getItem('authToken');
-    console.log("token", token);
 
     if (!token) {
       // No token means the user is not logged in
