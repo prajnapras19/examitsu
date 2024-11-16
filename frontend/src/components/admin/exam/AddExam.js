@@ -96,7 +96,7 @@ const AddExam = (props) => {
 
   return (
     <Container>
-      <h1 className="my-4">Tambah Palet</h1>
+      <h1 className="my-4">Tambah Ujian</h1>
       <hr/>
       <Container className="text-center mt-5">
         <Container className="card-grid">
