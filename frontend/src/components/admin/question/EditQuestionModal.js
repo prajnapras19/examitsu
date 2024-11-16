@@ -199,7 +199,40 @@ const EditQuestionModal = (props) => {
           draggable: true,
         });
       } catch (err) {
-        toast.success('Gagal menambahkan pilihan jawaban. Silakan coba beberapa saat lagi.', {
+        toast.error('Gagal menambahkan pilihan jawaban. Silakan coba beberapa saat lagi.', {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
+    }
+
+    const handleDeleteMcqOption = async (idx) => {
+      try {
+        await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/mcq-options/${mcqOptions[idx].id}`, {
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        });
+
+        setMcqOptions(
+          (prevArray) => 
+            prevArray.filter((_, index) => index !== idx)
+        );
+    
+        toast.success('Pilihan jawaban berhasil dihapus!', {
+          position: "top-center",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      } catch (err) {
+        toast.error('Gagal menghapus pilihan jawaban. Silakan coba beberapa saat lagi.', {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: false,
@@ -250,7 +283,7 @@ const EditQuestionModal = (props) => {
                   />
                 </Form.Group>
                 <Button variant="primary" type="submit" className="me-3">Simpan</Button>
-                <Button variant="danger">Hapus</Button>
+                <Button variant="danger" onClick={() => handleDeleteMcqOption(i)}>Hapus</Button>
               </Form>
               <hr/>
             </>
