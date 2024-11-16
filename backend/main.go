@@ -10,6 +10,7 @@ import (
 	"github.com/prajnapras19/project-form-exam-sman2/backend/client/mysql"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/exam"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/question"
 )
 
 func main() {
@@ -23,15 +24,18 @@ func initDefault(cfg *config.Config) {
 
 	// repositories
 	examRepository := exam.NewRepository(dbmysql.GetDB())
+	questionRepository := question.NewRepository(dbmysql.GetDB())
 
 	// services
 	adminAuthService := adminauth.NewService(cfg)
 	examService := exam.NewService(examRepository)
+	questionService := question.NewService(questionRepository)
 
 	// handlers
 	handler := api.NewHandler(
 		adminAuthService,
 		examService,
+		questionService,
 	)
 
 	// routes
@@ -54,6 +58,11 @@ func initDefault(cfg *config.Config) {
 	adminGroup.POST("/exams", handler.GetExams)
 	adminGroup.PATCH("/exams/:serial", handler.UpdateExam)
 	adminGroup.DELETE("/exams/:serial", handler.DeleteExamBySerial)
+
+	adminGroup.PUT("/questions", handler.CreateQuestion)
+	adminGroup.POST("/questions", handler.GetQuestions)
+	adminGroup.PATCH("/questions/:id", handler.UpdateQuestion)
+	adminGroup.DELETE("/questions/:id", handler.DeleteQuestionBySerial)
 
 	router.Run(fmt.Sprintf(":%d", cfg.RESTPort))
 }

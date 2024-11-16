@@ -10,7 +10,10 @@ const (
 
 	ExamSerialLength = 24
 
-	Serial = "serial"
+	ID          = "id"
+	Serial      = "serial"
+	ExamID      = "exam_id"
+	OrderNumber = "order_number"
 
 	QueryParameterPage                 = "page"
 	DefaultValueQueryParameterPage     = "1"
