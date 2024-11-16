@@ -2,6 +2,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { Modal, Button } from "react-bootstrap";
 import EditorJS from "@editorjs/editorjs";
+import Paragraph from "@editorjs/paragraph";
+import Underline from "@editorjs/underline";
+import List from "@editorjs/list";
+import Header from "@editorjs/header";
 import { toast } from 'react-toastify';
 
 const EditQuestionModal = (props) => {
@@ -23,11 +27,18 @@ const EditQuestionModal = (props) => {
           holder: "editor",
           tools: {
             header: {
-              class: require("@editorjs/header"),
-              inlineToolbar: ["link", "bold", "italic"],
+              class: Header,
+              inlineToolbar: ["bold", "italic", "underline"],
             },
-            list: require("@editorjs/list"),
-            underline: require("@editorjs/underline"),
+            list: List,
+            underline: {
+              class: Underline,
+              shortcut: 'CTRL+U',
+            },
+            paragraph: {
+              class: Paragraph,
+              inlineToolbar: ["bold", "italic", "underline"],
+            },
           },
           data: JSON.parse(response.data.data.data),
         });
