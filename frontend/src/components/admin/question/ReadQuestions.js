@@ -112,7 +112,7 @@ const ReadQuestions = (props) => {
     };
 
     fetchData();
-  }, [currentPage, auth.token]);
+  }, [currentPage, auth.token, triggerRender]);
 
   if (auth.loading) {
     return (
@@ -137,6 +137,10 @@ const ReadQuestions = (props) => {
     }
   };
 
+  const initiateTriggerRender = () => {
+    setTriggerRender(!triggerRender);
+  }
+
   return (
     <Container>
       <h1 className="my-4">Daftar Soal</h1>
@@ -145,7 +149,10 @@ const ReadQuestions = (props) => {
         <Container className="card-grid">
           <BackToHomepageCard></BackToHomepageCard>
           <ReadExamsMenuCard></ReadExamsMenuCard>
-          <AddQuestionCard></AddQuestionCard>
+          <AddQuestionCard
+            auth={auth}
+            initiateTriggerRender={initiateTriggerRender}
+          ></AddQuestionCard>
         </Container>
       </Container>
       <hr/>
@@ -195,13 +202,13 @@ const ReadQuestions = (props) => {
                 <td className="p-3">{question.id}</td>
                 <td className="p-3">{10 * (currentPage - 1) + i + 1}</td>
                 <td>
-                  <Button variant="primary" className="me-3" onClick={() => navigate(`/admin/questions/${question.serial}/edit`)}>Ubah</Button>
+                  <Button variant="primary" className="me-3" onClick={() => navigate(`/admin/questions/${question.id}/edit`)}>Ubah</Button>
                 </td>
                 <td>
-                <Button variant="secondary" className="me-3" onClick={() => navigate(`/admin/questions/${question.serial}/preview`)}>Lihat Soal</Button>
+                <Button variant="secondary" className="me-3" onClick={() => navigate(`/admin/questions/${question.id}/preview`)}>Lihat Soal</Button>
                 </td>
                 <td>
-                  <Button variant="danger" onClick={() => handleShowDeleteModal(question.serial)}>Hapus</Button>
+                  <Button variant="danger" onClick={() => handleShowDeleteModal(question.id)}>Hapus</Button>
                 </td>
               </tr>
             ))}
