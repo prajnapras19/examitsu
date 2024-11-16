@@ -8,6 +8,7 @@ import BackToHomepageCard from '../home/BackToHomepageCard';
 import AddQuestionCard from './AddQuestionCard';
 import DeleteConfirmationModal from '../../etc/DeleteConfirmationModal';
 import ReadExamsMenuCard from '../exam/ReadExamsMenuCard';
+import EditQuestionModal from './EditQuestionModal';
 
 const ReadQuestions = (props) => {
   const { auth } = props;
@@ -19,11 +20,24 @@ const ReadQuestions = (props) => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [triggerRender, setTriggerRender] = useState(false);
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editedQuestionId, setEditedQuestionId] = useState(0);
+  const handleShowEditModal = (questionId) => {
+    setEditedQuestionId(questionId);
+    setShowEditModal(true);
+  }
+  const handleCloseEditModal = () => {
+    setEditedQuestionId(0);
+    setShowEditModal(false);
+  }
+
+  
   
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deletedQuestionId, setDeletedQuestionId] = useState("");
-  const handleShowDeleteModal = (questionSerial) => {
-    setDeletedQuestionId(questionSerial);
+  const [deletedQuestionId, setDeletedQuestionId] = useState(0);
+  const handleShowDeleteModal = (questionId) => {
+    setDeletedQuestionId(questionId);
     setShowDeleteModal(true);
   }
   const handleCloseDeleteModal = () => {
@@ -202,10 +216,10 @@ const ReadQuestions = (props) => {
                 <td className="p-3">{question.id}</td>
                 <td className="p-3">{10 * (currentPage - 1) + i + 1}</td>
                 <td>
-                  <Button variant="primary" className="me-3" onClick={() => navigate(`/admin/questions/${question.id}/edit`)}>Ubah</Button>
+                  <Button variant="primary" className="me-3" onClick={() => handleShowEditModal(question.id)}>Ubah</Button>
                 </td>
                 <td>
-                <Button variant="secondary" className="me-3" onClick={() => navigate(`/admin/questions/${question.id}/preview`)}>Lihat Soal</Button>
+                <Button variant="secondary" className="me-3" onClick={() => navigate(`/admin/questions/${question.id}/preview`)}>Pratinjau</Button>
                 </td>
                 <td>
                   <Button variant="danger" onClick={() => handleShowDeleteModal(question.id)}>Hapus</Button>
@@ -229,6 +243,13 @@ const ReadQuestions = (props) => {
         handleClose={handleCloseDeleteModal}
         handleDelete={handleDelete}
       />
+      <EditQuestionModal
+        auth={auth}
+        show={showEditModal}
+        onClose={handleCloseEditModal}
+        questionId={editedQuestionId}
+      >
+      </EditQuestionModal>
     </Container>
   );
 }

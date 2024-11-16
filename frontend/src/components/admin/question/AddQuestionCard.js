@@ -11,6 +11,7 @@ const AddQuestionCard = (props) => {
   const handleAddQuestion = async () => {
     await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/questions`, {
       exam_serial: examSerial,
+      data: '{}', // editorjs requirement
     }, {
       headers: {
         Authorization: `Bearer ${auth.token}`,
