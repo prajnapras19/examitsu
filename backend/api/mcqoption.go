@@ -34,6 +34,11 @@ type UpdateMcqOptionRequest struct {
 	Point       int    `json:"point"`
 }
 
+type McqOptionWithoutPointData struct {
+	ID          uint   `json:"id"`
+	Description string `json:"description"`
+}
+
 /***
 	handler
 ***/
@@ -153,6 +158,21 @@ func (h *handler) MapMcqOptionEntityListToMcqOptionDataList(svcRes []*mcqoption.
 	res := []*McqOptionData{}
 	for _, obj := range svcRes {
 		res = append(res, h.MapMcqOptionEntityToMcqOptionData(obj))
+	}
+	return res
+}
+
+func (h *handler) MapMcqOptionEntityToMcqOptionWithoutPointData(svcRes *mcqoption.McqOption) *McqOptionWithoutPointData {
+	return &McqOptionWithoutPointData{
+		ID:          svcRes.ID,
+		Description: svcRes.Description,
+	}
+}
+
+func (h *handler) MapMcqOptionEntityListToMcqOptionWithoutPointDataList(svcRes []*mcqoption.McqOption) []*McqOptionWithoutPointData {
+	res := []*McqOptionWithoutPointData{}
+	for _, obj := range svcRes {
+		res = append(res, h.MapMcqOptionEntityToMcqOptionWithoutPointData(obj))
 	}
 	return res
 }

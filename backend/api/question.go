@@ -38,6 +38,11 @@ type UpdateQuestionRequest struct {
 	Data string `json:"data"`
 }
 
+type ExamSessionQuestionData struct {
+	Question *QuestionData                `json:"question"`
+	Options  []*McqOptionWithoutPointData `json:"options"`
+}
+
 /***
 	handler
 ***/
@@ -157,6 +162,12 @@ func (h *handler) GetQuestionByID(c *gin.Context) {
 
 	svcRes, err := h.questionService.GetQuestionByID(uint(id))
 	if err != nil {
+		if errors.Is(err, lib.ErrQuestionNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
 			Message: err.Error(),
 		})
@@ -225,8 +236,85 @@ func (h *handler) GetQuestionsIDByExamSerial(c *gin.Context) {
 	})
 }
 
-func (h *handler) GetQuestionByIDWithOptions(c *gin.Context) {
+func (h *handler) GetQuestionWithOptions(c *gin.Context) {
+	jwtClaims, err := lib.GetExamTokenJWTClaimsFromContext(c)
+	if err != nil {
+		log.Printf("[handler][question][GetQuestionsIDByExamSerial] error when get jwt: %s", err.Error())
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: lib.ErrUnknownError.Error(),
+		})
+		return
+	}
 
+	participant, err := h.participantService.GetParticipantByID(jwtClaims.ParticipantID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	examSerial := c.Param(constants.Serial)
+	exam, err := h.examService.GetExamBySerial(examSerial)
+	if err != nil {
+		if errors.Is(err, lib.ErrExamNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	if participant.ExamID != exam.ID {
+		c.JSON(http.StatusUnauthorized, lib.BaseResponse{
+			Message: lib.ErrUnauthorizedRequest.Error(),
+		})
+		return
+	}
+
+	questionID, _ := strconv.ParseUint(c.Param(constants.ID), 10, 64)
+	question, err := h.questionService.GetQuestionByID(uint(questionID))
+	if err != nil {
+		if errors.Is(err, lib.ErrQuestionNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	if question.ExamID != exam.ID {
+		c.JSON(http.StatusNotFound, lib.BaseResponse{
+			Message: lib.ErrQuestionNotFound.Error(),
+		})
+		return
+	}
+
+	mcqOptions, err := h.mcqOptionService.GetMcqOptionsByQuestionID(question.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	// TODO: also get submission for the question id
+
+	res := ExamSessionQuestionData{
+		Question: h.MapQuestionEntityToQuestionData(question),
+		Options:  h.MapMcqOptionEntityListToMcqOptionWithoutPointDataList(mcqOptions),
+	}
+	c.JSON(http.StatusOK, lib.BaseResponse{
+		Message: constants.Success,
+		Data:    res,
+	})
 }
 
 func (h *handler) UpdateQuestion(c *gin.Context) {
