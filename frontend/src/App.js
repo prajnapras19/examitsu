@@ -18,8 +18,8 @@ function App() {
         <ToastContainer />
         <Routes>
           <Route path="/admin/*" element={<AdminRoutes/>}/>
-          <Route path="/public/exams/:examSerial" element={<StartExam/>} />
-          <Route path="/public/*" element={<ParticipantRoutes/>}/>
+          <Route path="/exam/:examSerial" element={<StartExam/>} />
+          <Route path="/exam-session/*" element={<ParticipantRoutes/>}/>
           <Route path="/500" element={<InternalServerErrorPage/>} />
           <Route path="*" element={<NotFoundPage/>}/>
         </Routes>

@@ -55,7 +55,7 @@ const StartExam = () => {
       });
       const token = response.data.data.token;
       localStorage.setItem('examToken', token);
-      navigate('/public/exam-session');
+      navigate(`/exam-session/${examSerial}`);
     } catch (error) {
       console.error(error);
       if (error.status === 404) {
