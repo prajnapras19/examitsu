@@ -3,12 +3,15 @@ import { useNavigate, useParams } from 'react-router-dom';
 import InternalServerErrorPage from '../etc/500';
 import { Container, Spinner } from 'react-bootstrap';
 import axios from 'axios';
+import QuestionListSidebar from './QuestionListSidebar';
 
 const ExamSession = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { examSerial } = useParams();
   const navigate = useNavigate();
+  const [questionIDList, setQuestionIDList] = useState([]);
+  const [currentQuestionNumber, setCurrentQuestionNumber] = useState(1);
 
   useEffect(() => {
     const token = localStorage.getItem('examToken');
@@ -23,7 +26,7 @@ const ExamSession = () => {
       },
     })
     .then(response => { 
-      console.log('response', response.data.data);
+      setQuestionIDList(response.data.data);
       setLoading(false);
     })
     .catch(error => {
@@ -35,7 +38,7 @@ const ExamSession = () => {
       }
       setLoading(false);
     });
-  });
+  }, [currentQuestionNumber]);
 
   if (loading) {
     return (
@@ -49,6 +52,33 @@ const ExamSession = () => {
   if (error) {
     return <InternalServerErrorPage></InternalServerErrorPage>
   }
+
+  if (questionIDList.length == 0) {
+    return (
+      <Container className="text-center mt-5 prevent-select">
+        <p>
+          <i>Tidak ada soal tersedia.</i>
+        </p>
+      </Container>
+    )
+  }
+
+  const handleChooseQuestion = (id) => {
+    setCurrentQuestionNumber(id);
+  }
+
+  return (
+    <>
+      <hr/>
+      <QuestionListSidebar
+        questionIDList={questionIDList}
+        handleChooseQuestion={handleChooseQuestion}
+      />
+      <hr/>
+      <Container className="text-center mt-5 prevent-select">  
+      </Container>
+    </>
+  );
 }
 
 export default ExamSession;
