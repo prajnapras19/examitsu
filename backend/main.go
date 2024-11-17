@@ -93,10 +93,7 @@ func initDefault(cfg *config.Config) {
 
 	examSessionGroup := apiV1.Group("/exam-session")
 	examSessionGroup.Use(api.JWTExamTokenMiddleware(participantService))
-	// TODO
-	examSessionGroup.GET("/hello", func(gc *gin.Context) {
-		gc.JSON(http.StatusOK, gin.H{"hello": "world!"})
-	})
+	examSessionGroup.GET("/:serial/questions", handler.GetQuestionsIDByExamSerial)
 
 	router.Run(fmt.Sprintf(":%d", cfg.RESTPort))
 }

@@ -170,6 +170,37 @@ func (h *handler) GetQuestionByID(c *gin.Context) {
 	})
 }
 
+func (h *handler) GetQuestionsIDByExamSerial(c *gin.Context) {
+	examSerial := c.Param(constants.Serial)
+	exam, err := h.examService.GetExamBySerial(examSerial)
+	if err != nil {
+		if errors.Is(err, lib.ErrExamNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	svcRes, err := h.questionService.GetQuestionsIDByExamID(exam.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	res := h.MapQuestionEntityListToQuestionDataIDOnlyList(svcRes)
+	c.JSON(http.StatusOK, lib.BaseResponse{
+		Message: constants.Success,
+		Data:    res,
+	})
+}
+
 func (h *handler) UpdateQuestion(c *gin.Context) {
 	var req UpdateQuestionRequest
 

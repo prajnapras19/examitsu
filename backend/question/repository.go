@@ -19,6 +19,7 @@ type Repository interface {
 	GetQuestionsIDOnly(pagination *lib.QueryPagination, filter *GetQuestionsFilter) ([]*Question, error)
 	GetQuestionByID(id uint) (*Question, error)
 	GetQuestions(pagination *lib.QueryPagination, filter *GetQuestionsFilter) ([]*Question, error)
+	GetQuestionsIDByExamID(examID uint) ([]*Question, error)
 	UpdateQuestionDataByID(question *Question) error
 	DeleteQuestionByID(id uint) error
 }
@@ -49,6 +50,7 @@ func (r *repository) CreateQuestion(question *Question) (*Question, error) {
 		if err := tx.Model(question).Where("id = ?", question.ID).Update(constants.OrderNumber, question.ID).Error; err != nil {
 			return err
 		}
+		r.cache.Del(context.Background(), r.GetQuestionsIDByExamIDCacheKey(question.ExamID))
 		return nil
 	})
 	return question, err
@@ -83,6 +85,26 @@ func (r *repository) GetQuestionsIDOnly(pagination *lib.QueryPagination, filter 
 	return res, err
 }
 
+func (r *repository) GetQuestionsIDByExamID(examID uint) ([]*Question, error) {
+	var questions []*Question
+
+	cacheKey := r.GetQuestionsIDByExamIDCacheKey(examID)
+	val, err := r.cache.Get(context.Background(), cacheKey).Result()
+	if err == nil {
+		json.Unmarshal([]byte(val), &questions)
+		return questions, nil
+	}
+
+	err = r.db.Select("id").Order("order_number ASC").Where("exam_id = ?", examID).Find(&questions).Error
+	if err != nil {
+		return nil, err
+	}
+
+	res, _ := json.Marshal(questions)
+	r.cache.Set(context.Background(), cacheKey, res, r.cfg.CacheTTL)
+	return questions, err
+}
+
 func (r *repository) GetQuestions(pagination *lib.QueryPagination, filter *GetQuestionsFilter) ([]*Question, error) {
 	var res []*Question
 	err := r.db.Scopes(append(filter.Scope(), pagination.Scope())...).Find(&res).Error
@@ -96,6 +118,7 @@ func (r *repository) UpdateQuestionDataByID(question *Question) error {
 	}
 
 	r.cache.Del(context.Background(), r.GetQuestionByIDCacheKey(currentData.ID))
+	r.cache.Del(context.Background(), r.GetQuestionsIDByExamIDCacheKey(currentData.ExamID))
 
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		return tx.Model(&Question{}).
@@ -112,6 +135,7 @@ func (r *repository) DeleteQuestionByID(id uint) error {
 	}
 
 	r.cache.Del(context.Background(), r.GetQuestionByIDCacheKey(currentData.ID))
+	r.cache.Del(context.Background(), r.GetQuestionsIDByExamIDCacheKey(currentData.ExamID))
 
 	res := r.db.Model(&Question{}).Where("id = ?", id).Delete(&Question{})
 	if res.Error != nil {
@@ -126,4 +150,8 @@ func (r *repository) DeleteQuestionByID(id uint) error {
 
 func (r *repository) GetQuestionByIDCacheKey(id uint) string {
 	return fmt.Sprintf("question:id:%d", id)
+}
+
+func (r *repository) GetQuestionsIDByExamIDCacheKey(examID uint) string {
+	return fmt.Sprintf("question_id_list:examID:%d", examID)
 }

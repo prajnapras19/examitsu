@@ -25,6 +25,7 @@ type Handler interface {
 	CreateQuestion(*gin.Context)
 	GetQuestions(*gin.Context)
 	GetQuestionByID(*gin.Context)
+	GetQuestionsIDByExamSerial(*gin.Context)
 	UpdateQuestion(*gin.Context)
 	DeleteQuestionBySerial(*gin.Context)
 
