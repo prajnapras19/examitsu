@@ -137,7 +137,7 @@ const ReadExams = (props) => {
               <th>Serial</th>
               <th>Nama</th>
               <th>Sudah / Masih Bisa Dikerjakan?</th>
-              <th colSpan="3">Aksi</th>
+              <th colSpan="4">Aksi</th>
             </tr>
           </thead>
           <tbody>
