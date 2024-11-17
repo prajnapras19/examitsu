@@ -9,6 +9,7 @@ import (
 	"github.com/prajnapras19/project-form-exam-sman2/backend/adminauth"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/participant"
 )
 
 var (
@@ -43,6 +44,32 @@ func JWTAdminMiddleware(adminAuthService adminauth.Service) gin.HandlerFunc {
 		}
 		tokenString := strings.Replace(authorizationHeader, "Bearer ", "", -1)
 		claims, err := adminAuthService.ValidateToken(tokenString)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			c.Abort()
+			return
+		}
+
+		c.Set(constants.JWTClaims, claims)
+
+		c.Next()
+	}
+}
+
+func JWTExamTokenMiddleware(participantService participant.Service) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authorizationHeader := c.GetHeader("Authorization")
+		if authorizationHeader == "" {
+			c.JSON(http.StatusUnauthorized, lib.BaseResponse{
+				Message: ErrUnauthorizedRequest.Error(),
+			})
+			c.Abort()
+			return
+		}
+		tokenString := strings.Replace(authorizationHeader, "Bearer ", "", -1)
+		claims, err := participantService.ValidateToken(tokenString)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, lib.BaseResponse{
 				Message: err.Error(),

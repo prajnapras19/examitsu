@@ -30,7 +30,7 @@ func initDefault(cfg *config.Config) {
 	examRepository := exam.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient())
 	questionRepository := question.NewRepository(dbmysql.GetDB())
 	mcqOptionRepository := mcqoption.NewRepository(dbmysql.GetDB())
-	participantRepository := participant.NewRepository(dbmysql.GetDB())
+	participantRepository := participant.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient())
 
 	// services
 	adminAuthService := adminauth.NewService(cfg)
@@ -89,6 +89,14 @@ func initDefault(cfg *config.Config) {
 	adminGroup.DELETE("/participants/:id", handler.DeleteParticipantByID)
 
 	apiV1.GET("/exams/:serial", handler.GetOpenedExam)
+	apiV1.POST("/exams/:serial/start", handler.StartExam)
+
+	examSessionGroup := apiV1.Group("/exam-session")
+	examSessionGroup.Use(api.JWTExamTokenMiddleware(participantService))
+	// TODO
+	examSessionGroup.GET("/hello", func(gc *gin.Context) {
+		gc.JSON(http.StatusOK, gin.H{"hello": "world!"})
+	})
 
 	router.Run(fmt.Sprintf(":%d", cfg.RESTPort))
 }

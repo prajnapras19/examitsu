@@ -3,7 +3,9 @@ package participant
 import (
 	"errors"
 	"log"
+	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
 )
@@ -14,6 +16,11 @@ type Service interface {
 	GetParticipantByID(id uint) (*Participant, error)
 	UpdateParticipant(participant *Participant) error
 	DeleteParticipantByID(id uint) error
+	GetParticipantByExamIDAndName(examID uint, name string) (*Participant, error)
+
+	GenerateToken(examSerial string, participantID uint) string
+	VerifyToken(token *jwt.Token) (interface{}, error)
+	ValidateToken(tokenString string) (*lib.ExamTokenJWTClaims, error)
 }
 
 type service struct {
@@ -69,11 +76,11 @@ func (s *service) GetParticipantsByExamID(examID uint) ([]*Participant, error) {
 func (s *service) GetParticipantByID(id uint) (*Participant, error) {
 	res, err := s.participantRepository.GetParticipantByID(id)
 	if err != nil {
-		log.Println("[participant][service][GetQuestionByID] failed to get participant by id:", err.Error())
-		if errors.Is(err, lib.ErrQuestionNotFound) {
+		log.Println("[participant][service][GetParticipantByID] failed to get participant by id:", err.Error())
+		if errors.Is(err, lib.ErrParticipantNotFound) {
 			return nil, err
 		}
-		return nil, lib.ErrFailedToGetQuestionByID
+		return nil, lib.ErrFailedToGetParticipant
 	}
 	return res, nil
 }
@@ -97,4 +104,62 @@ func (s *service) DeleteParticipantByID(id uint) error {
 		return lib.ErrFailedToDeleteParticipant
 	}
 	return nil
+}
+
+func (s *service) GetParticipantByExamIDAndName(examID uint, name string) (*Participant, error) {
+	res, err := s.participantRepository.GetParticipantByExamIDAndName(examID, name)
+	if err != nil {
+		log.Println("[participant][service][GetParticipantByExamIDAndName] failed to get participant:", err.Error())
+		if errors.Is(err, lib.ErrParticipantNotFound) {
+			return nil, err
+		}
+		return nil, lib.ErrFailedToGetParticipant
+	}
+	return res, nil
+}
+
+func (s *service) GenerateToken(examSerial string, participantID uint) string {
+	claims := lib.ExamTokenJWTClaims{
+		StandardClaims: jwt.StandardClaims{
+			Issuer:    s.cfg.AuthConfig.ApplicationName,
+			ExpiresAt: time.Now().Add(s.cfg.AuthConfig.LoginTokenExpirationDuration).Unix(),
+		},
+		ParticipantID: participantID,
+	}
+	token := jwt.NewWithClaims(
+		jwt.SigningMethodHS256,
+		claims,
+	)
+	signedToken, _ := token.SignedString(s.cfg.AuthConfig.SignatureKey)
+	return signedToken
+}
+
+func (s *service) VerifyToken(token *jwt.Token) (interface{}, error) {
+	if method, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		return nil, lib.ErrSigningMethodInvalid
+	} else if method != jwt.SigningMethodHS256 {
+		return nil, lib.ErrSigningMethodInvalid
+	}
+	return s.cfg.AuthConfig.SignatureKey, nil
+}
+
+func (s *service) ValidateToken(tokenString string) (*lib.ExamTokenJWTClaims, error) {
+	claims := &lib.ExamTokenJWTClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, s.VerifyToken)
+	if err != nil {
+		return nil, lib.ErrUnauthorizedRequest
+	}
+	if !token.Valid {
+		return nil, lib.ErrUnauthorizedRequest
+	}
+	claims, ok := token.Claims.(*lib.ExamTokenJWTClaims)
+	if !ok {
+		return nil, lib.ErrUnauthorizedRequest
+	}
+
+	if _, err := s.GetParticipantByID(claims.ParticipantID); err != nil {
+		return nil, lib.ErrUnauthorizedRequest
+	}
+
+	return claims, nil
 }

@@ -74,6 +74,9 @@ func (s *service) ValidateToken(tokenString string) (*lib.JWTClaims, error) {
 	if !ok {
 		return nil, lib.ErrUnauthorizedRequest
 	}
+	if claims.Username != constants.SystemUser {
+		return nil, lib.ErrUnauthorizedRequest
+	}
 
 	return claims, nil
 }

@@ -38,6 +38,16 @@ type UpdateParticipantRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type StartExamRequest struct {
+	ExamID   uint   `json:"-"`
+	Name     string `json:"name" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+type StartExamResponse struct {
+	Token string `json:"token"`
+}
+
 /***
 	handler
 ***/
@@ -177,6 +187,82 @@ func (h *handler) DeleteParticipantByID(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, lib.BaseResponse{
 		Message: constants.Success,
+	})
+}
+
+func (h *handler) StartExam(c *gin.Context) {
+	var req StartExamRequest
+
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrFailedToParseRequest.Error(),
+		})
+		return
+	}
+
+	exam, err := h.examService.GetExamBySerial(c.Param(constants.Serial))
+	if err != nil {
+		if errors.Is(err, lib.ErrExamNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	req.ExamID = exam.ID
+	participant, err := h.participantService.GetParticipantByExamIDAndName(req.ExamID, req.Name)
+	if err != nil {
+		if errors.Is(err, lib.ErrParticipantNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	if participant.Password != req.Password {
+		c.JSON(http.StatusNotFound, lib.BaseResponse{
+			Message: lib.ErrParticipantNotFound.Error(),
+		})
+		return
+	}
+
+	if participant.EndedAt != nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrExamAlreadySubmitted.Error(),
+		})
+		return
+	}
+
+	// if exam is already started
+	if participant.StartedAt != nil {
+		currentTime := time.Now()
+		participant.StartedAt = &currentTime
+		err = h.participantService.UpdateParticipant(participant)
+		if err == nil {
+			c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+	}
+
+	// generate exam token
+	examToken := h.participantService.GenerateToken(exam.Serial, participant.ID)
+	c.JSON(http.StatusOK, lib.BaseResponse{
+		Message: constants.Success,
+		Data: StartExamResponse{
+			Token: examToken,
+		},
 	})
 }
 

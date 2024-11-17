@@ -8,6 +8,9 @@ var (
 	ErrUnknownError           = errors.New("unknown error")
 	ErrInsufficientPermission = errors.New("insufficient permission")
 
+	// handler.participant
+	ErrExamAlreadySubmitted = errors.New("exam already submitted")
+
 	// lib.jwt_claims
 	ErrFailedToParseJWTClaimsInContext = errors.New("failed to parse jwt claims in context")
 	ErrJWTClaimsNotFoundInContext      = errors.New("jwt claims not found in context")
@@ -55,6 +58,7 @@ var (
 
 	// participant.service
 	ErrFailedToCreateParticipants = errors.New("failed to create participants")
+	ErrFailedToGetParticipant     = errors.New("failed to get participant")
 	ErrFailedToGetParticipants    = errors.New("failed to get participants")
 	ErrFailedToUpdateParticipant  = errors.New("failed to update participant")
 	ErrFailedToDeleteParticipant  = errors.New("failed to delete participant")

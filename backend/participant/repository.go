@@ -1,11 +1,16 @@
 package participant
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 
+	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
+	redis "github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -13,18 +18,26 @@ type Repository interface {
 	CreateParticipants(participants []*Participant) ([]*Participant, error)
 	GetParticipantsByExamID(examID uint) ([]*Participant, error)
 	GetParticipantByID(id uint) (*Participant, error)
-	// TODO: get by exam id, name, and password (participant side)
+	GetParticipantByExamIDAndName(examID uint, name string) (*Participant, error)
 	UpdateParticipant(participant *Participant) error
 	DeleteParticipantByID(id uint) error
 }
 
 type repository struct {
-	db *gorm.DB
+	cfg   *config.Config
+	db    *gorm.DB
+	cache *redis.Client
 }
 
-func NewRepository(db *gorm.DB) Repository {
+func NewRepository(
+	cfg *config.Config,
+	db *gorm.DB,
+	cache *redis.Client,
+) Repository {
 	return &repository{
-		db: db,
+		cfg:   cfg,
+		db:    db,
+		cache: cache,
 	}
 }
 
@@ -40,18 +53,60 @@ func (r *repository) GetParticipantsByExamID(examID uint) ([]*Participant, error
 }
 
 func (r *repository) GetParticipantByID(id uint) (*Participant, error) {
-	var question Participant
-	err := r.db.Where("id = ?", id).First(&question).Error
+	var participant Participant
+
+	cacheKey := r.GetParticipantByIDCacheKey(id)
+	val, err := r.cache.Get(context.Background(), cacheKey).Result()
+	if err == nil {
+		json.Unmarshal([]byte(val), &participant)
+		return &participant, nil
+	}
+
+	err = r.db.Where("id = ?", id).First(&participant).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, lib.ErrParticipantNotFound
 		}
 		return nil, err
 	}
-	return &question, nil
+
+	res, _ := json.Marshal(participant)
+	r.cache.Set(context.Background(), cacheKey, res, r.cfg.CacheTTL)
+	return &participant, nil
+}
+
+func (r *repository) GetParticipantByExamIDAndName(examID uint, name string) (*Participant, error) {
+	var participant Participant
+
+	cacheKey := r.GetParticipantByExamIDAndNameCacheKey(examID, name)
+	val, err := r.cache.Get(context.Background(), cacheKey).Result()
+	if err == nil {
+		json.Unmarshal([]byte(val), &participant)
+		return &participant, nil
+	}
+
+	err = r.db.Where("exam_id = ? AND name = ?", examID, name).First(&participant).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, lib.ErrParticipantNotFound
+		}
+		return nil, err
+	}
+
+	res, _ := json.Marshal(participant)
+	r.cache.Set(context.Background(), cacheKey, res, r.cfg.CacheTTL)
+	return &participant, nil
 }
 
 func (r *repository) UpdateParticipant(participant *Participant) error {
+	currentData, err := r.GetParticipantByID(participant.ID)
+	if err != nil {
+		return err
+	}
+
+	r.cache.Del(context.Background(), r.GetParticipantByIDCacheKey(currentData.ID))
+	r.cache.Del(context.Background(), r.GetParticipantByExamIDAndNameCacheKey(currentData.ExamID, currentData.Name))
+
 	res := r.db.Updates(participant)
 	if res.Error != nil {
 		return res.Error
@@ -64,6 +119,14 @@ func (r *repository) UpdateParticipant(participant *Participant) error {
 }
 
 func (r *repository) DeleteParticipantByID(id uint) error {
+	currentData, err := r.GetParticipantByID(id)
+	if err != nil {
+		return err
+	}
+
+	r.cache.Del(context.Background(), r.GetParticipantByIDCacheKey(currentData.ID))
+	r.cache.Del(context.Background(), r.GetParticipantByExamIDAndNameCacheKey(currentData.ExamID, currentData.Name))
+
 	res := r.db.Model(&Participant{}).Where("id = ?", id).Delete(&Participant{})
 	if res.Error != nil {
 		return res.Error
@@ -73,4 +136,12 @@ func (r *repository) DeleteParticipantByID(id uint) error {
 		return lib.ErrParticipantNotFound
 	}
 	return nil
+}
+
+func (r *repository) GetParticipantByIDCacheKey(id uint) string {
+	return fmt.Sprintf("participant:id:%d", id)
+}
+
+func (r *repository) GetParticipantByExamIDAndNameCacheKey(examID uint, name string) string {
+	return fmt.Sprintf("participant:examID:%d:name:%s", examID, name)
 }
