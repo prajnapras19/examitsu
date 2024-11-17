@@ -4,6 +4,7 @@ import InternalServerErrorPage from '../etc/500';
 import { Container, Spinner } from 'react-bootstrap';
 import axios from 'axios';
 import QuestionListSidebar from './QuestionListSidebar';
+import EditorJsHTML from 'editorjs-html';
 
 const ExamSession = () => {
   const [loading, setLoading] = useState(true);
@@ -13,6 +14,7 @@ const ExamSession = () => {
   const [questionIDList, setQuestionIDList] = useState([]);
   const [currentQuestionNumber, setCurrentQuestionNumber] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(null);
+  const edjsParser = EditorJsHTML();
 
   useEffect(() => {
     if (!loading) {
@@ -91,6 +93,16 @@ const ExamSession = () => {
     setCurrentQuestionNumber(i);
   }
 
+  let parsedHTML = undefined;
+  if (currentQuestion) {
+    try {
+      parsedHTML = edjsParser.parse(JSON.parse(currentQuestion.question.data)).join('');
+    } catch (err) {
+      parsedHTML = `<div></div>`;
+    }
+  }
+  console.log(parsedHTML);
+
   return (
     <>
       <hr/>
@@ -99,17 +111,21 @@ const ExamSession = () => {
         handleChooseQuestion={handleChooseQuestion}
       />
       <hr/>
-      <Container className="mt-5 prevent-select">  
-        <h3>Soal {currentQuestionNumber}</h3>
+      <h3 className="text-center">Soal {currentQuestionNumber}</h3>
+      <hr/>
+      <Container className="mt-3 prevent-select">    
         {currentQuestion
         ? (
-          <></>
+          <div dangerouslySetInnerHTML={{ __html: parsedHTML }} />
         )
         : (
           <p>
             <i>Soal tidak ditemukan.</i>
           </p>
         )}
+      </Container>
+      <hr/>
+      <Container className="mt-3 prevent-select">    
       </Container>
     </>
   );
