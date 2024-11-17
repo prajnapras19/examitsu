@@ -8,6 +8,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import AdminRoutes from './AdminRoutes';
 import ParticipantRoutes from './ParticipantRoutes';
 import StartExam from './components/participant/StartExam';
+import InternalServerErrorPage from './components/etc/500';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/admin/*" element={<AdminRoutes/>}/>
           <Route path="/public/exams/:examSerial" element={<StartExam/>} />
           <Route path="/public/*" element={<ParticipantRoutes/>}/>
+          <Route path="/500" element={<InternalServerErrorPage/>} />
           <Route path="*" element={<NotFoundPage/>}/>
         </Routes>
       </Router>
