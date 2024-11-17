@@ -28,7 +28,7 @@ func initDefault(cfg *config.Config) {
 
 	// repositories
 	examRepository := exam.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient())
-	questionRepository := question.NewRepository(dbmysql.GetDB())
+	questionRepository := question.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient())
 	mcqOptionRepository := mcqoption.NewRepository(dbmysql.GetDB())
 	participantRepository := participant.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient())
 
