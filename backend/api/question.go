@@ -171,6 +171,23 @@ func (h *handler) GetQuestionByID(c *gin.Context) {
 }
 
 func (h *handler) GetQuestionsIDByExamSerial(c *gin.Context) {
+	jwtClaims, err := lib.GetExamTokenJWTClaimsFromContext(c)
+	if err != nil {
+		log.Printf("[handler][question][GetQuestionsIDByExamSerial] error when get jwt: %s", err.Error())
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: lib.ErrUnknownError.Error(),
+		})
+		return
+	}
+
+	participant, err := h.participantService.GetParticipantByID(jwtClaims.ParticipantID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
 	examSerial := c.Param(constants.Serial)
 	exam, err := h.examService.GetExamBySerial(examSerial)
 	if err != nil {
@@ -186,6 +203,15 @@ func (h *handler) GetQuestionsIDByExamSerial(c *gin.Context) {
 		return
 	}
 
+	if participant.ExamID != exam.ID {
+		if errors.Is(err, lib.ErrExamNotFound) {
+			c.JSON(http.StatusUnauthorized, lib.BaseResponse{
+				Message: lib.ErrUnauthorizedRequest.Error(),
+			})
+			return
+		}
+	}
+
 	svcRes, err := h.questionService.GetQuestionsIDByExamID(exam.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
@@ -199,6 +225,10 @@ func (h *handler) GetQuestionsIDByExamSerial(c *gin.Context) {
 		Message: constants.Success,
 		Data:    res,
 	})
+}
+
+func (h *handler) GetQuestionByIDWithOptions(c *gin.Context) {
+
 }
 
 func (h *handler) UpdateQuestion(c *gin.Context) {
