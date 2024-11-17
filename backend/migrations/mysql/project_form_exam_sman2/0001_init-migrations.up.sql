@@ -55,10 +55,11 @@ CREATE TABLE participants(
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP DEFAULT NULL,
+    not_archived BOOLEAN GENERATED ALWAYS AS (IF(deleted_at IS NULL, 1, NULL)) VIRTUAL,
 
     CONSTRAINT PK_id PRIMARY KEY (id),
     CONSTRAINT FOREIGN KEY (exam_id) REFERENCES exams(id),
-    CONSTRAINT UNIQUE (exam_id, name)
+    CONSTRAINT UNIQUE (exam_id, name, not_archived)
 );
 
 CREATE TABLE submissions(
