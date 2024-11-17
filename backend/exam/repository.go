@@ -77,7 +77,7 @@ func (r *repository) GetExamBySerial(serial string) (*Exam, error) {
 		return &exam, nil
 	}
 
-	err = r.db.Where("serial = ?", serial).First(&exam).Error
+	err = r.db.Where("serial = ? AND not_archived", serial).First(&exam).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, lib.ErrExamNotFound
