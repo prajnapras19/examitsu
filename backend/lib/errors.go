@@ -26,6 +26,7 @@ var (
 	// exam.service
 	ErrFailedToCreateExam      = errors.New("failed to create exam")
 	ErrFailedToGetExamBySerial = errors.New("failed to get exam by serial")
+	ErrFailedToGetExam         = errors.New("failed to get exam")
 	ErrFailedToGetExams        = errors.New("failed to get exams")
 	ErrFailedToUpdateExam      = errors.New("failed to update exam")
 	ErrFailedToDeleteExam      = errors.New("failed to delete exam")

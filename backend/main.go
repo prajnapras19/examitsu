@@ -8,6 +8,7 @@ import (
 	"github.com/prajnapras19/project-form-exam-sman2/backend/adminauth"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/api"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/client/mysql"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/client/redis"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/exam"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/mcqoption"
@@ -23,9 +24,10 @@ func main() {
 func initDefault(cfg *config.Config) {
 	// clients
 	dbmysql := mysql.NewService(cfg.MySQLConfig)
+	dbredis := redis.NewService(cfg.RedisConfig)
 
 	// repositories
-	examRepository := exam.NewRepository(dbmysql.GetDB())
+	examRepository := exam.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient())
 	questionRepository := question.NewRepository(dbmysql.GetDB())
 	mcqOptionRepository := mcqoption.NewRepository(dbmysql.GetDB())
 	participantRepository := participant.NewRepository(dbmysql.GetDB())
@@ -85,6 +87,8 @@ func initDefault(cfg *config.Config) {
 	adminGroup.POST("/participants/id/:id", handler.GetParticipantByID)
 	adminGroup.PATCH("/participants/:id", handler.UpdateParticipant)
 	adminGroup.DELETE("/participants/:id", handler.DeleteParticipantByID)
+
+	apiV1.GET("/exams/:serial", handler.GetOpenedExam)
 
 	router.Run(fmt.Sprintf(":%d", cfg.RESTPort))
 }

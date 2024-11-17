@@ -1,10 +1,15 @@
 package exam
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 
+	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
+	redis "github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -17,12 +22,20 @@ type Repository interface {
 }
 
 type repository struct {
-	db *gorm.DB
+	cfg   *config.Config
+	db    *gorm.DB
+	cache *redis.Client
 }
 
-func NewRepository(db *gorm.DB) Repository {
+func NewRepository(
+	cfg *config.Config,
+	db *gorm.DB,
+	cache *redis.Client,
+) Repository {
 	return &repository{
-		db: db,
+		cfg:   cfg,
+		db:    db,
+		cache: cache,
 	}
 }
 
@@ -33,13 +46,23 @@ func (r *repository) CreateExam(exam *Exam) (*Exam, error) {
 
 func (r *repository) GetExamBySerial(serial string) (*Exam, error) {
 	var exam Exam
-	err := r.db.Where("serial = ?", serial).First(&exam).Error
+
+	cacheKey := r.GetExamBySerialCacheKey(serial)
+	val, err := r.cache.Get(context.Background(), cacheKey).Result()
+	if err == nil {
+		json.Unmarshal([]byte(val), &exam)
+		return &exam, nil
+	}
+
+	err = r.db.Where("serial = ?", serial).First(&exam).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, lib.ErrExamNotFound
 		}
 		return nil, err
 	}
+	res, _ := json.Marshal(exam)
+	r.cache.Set(context.Background(), cacheKey, res, r.cfg.CacheTTL)
 	return &exam, nil
 }
 
@@ -50,7 +73,7 @@ func (r *repository) GetExams(pagination *lib.QueryPagination, filter *GetExamsF
 }
 
 func (r *repository) UpdateExam(exam *Exam) error {
-	return r.db.Transaction(func(tx *gorm.DB) error {
+	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Model(&Exam{}).
 			Where("serial = ?", exam.Serial).
 			Update("name", exam.Name).
@@ -67,6 +90,12 @@ func (r *repository) UpdateExam(exam *Exam) error {
 
 		return nil
 	})
+	if err != nil {
+		return err
+	}
+	cacheKey := r.GetExamBySerialCacheKey(exam.Serial)
+	r.cache.Del(context.Background(), cacheKey)
+	return nil
 }
 
 func (r *repository) DeleteExamBySerial(serial string) error {
@@ -78,5 +107,11 @@ func (r *repository) DeleteExamBySerial(serial string) error {
 		log.Printf("[exam][repository][DeleteExamBySerial] error: %s", res.Error)
 		return lib.ErrExamNotFound
 	}
+	cacheKey := r.GetExamBySerialCacheKey(serial)
+	r.cache.Del(context.Background(), cacheKey)
 	return nil
+}
+
+func (r *repository) GetExamBySerialCacheKey(serial string) string {
+	return fmt.Sprintf("exam:%s", serial)
 }

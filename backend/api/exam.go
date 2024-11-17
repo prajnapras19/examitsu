@@ -163,6 +163,34 @@ func (h *handler) DeleteExamBySerial(c *gin.Context) {
 	})
 }
 
+func (h *handler) GetOpenedExam(c *gin.Context) {
+	svcRes, err := h.examService.GetExamBySerial(c.Param(constants.Serial))
+	if err != nil {
+		if errors.Is(err, lib.ErrExamNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	res := h.MapExamEntityToExamData(svcRes)
+	if !res.IsOpen {
+		c.JSON(http.StatusNotFound, lib.BaseResponse{
+			Message: lib.ErrExamNotFound.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, lib.BaseResponse{
+		Message: constants.Success,
+		Data:    res,
+	})
+}
+
 /***
 	mapping
 ***/

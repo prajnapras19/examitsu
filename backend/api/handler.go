@@ -19,6 +19,7 @@ type Handler interface {
 	GetExams(*gin.Context)
 	UpdateExam(*gin.Context)
 	DeleteExamBySerial(*gin.Context)
+	GetOpenedExam(*gin.Context)
 
 	CreateQuestion(*gin.Context)
 	GetQuestions(*gin.Context)

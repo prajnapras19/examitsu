@@ -10,14 +10,16 @@ import (
 )
 
 type Config struct {
-	RESTPort                        int      `envconfig:"HTTP_PORT" default:"8080"`
-	AllowCORS                       bool     `envconfig:"ALLOW_CORS" default:"true"`
-	SystemPassword                  string   `envconfig:"SYSTEM_PASSWORD" default:""`
-	ParticipantRandomPasswordLength int      `envconfig:"PARTICIPANT_RANDOM_PASSWORD_LENGTH" default:"8"`
-	InitialMcqOptions               []string `envconfig:"INITIAL_MCQ_OPTIONS" default:"A,B,C,D,E"`
+	RESTPort                        int           `envconfig:"HTTP_PORT" default:"8080"`
+	AllowCORS                       bool          `envconfig:"ALLOW_CORS" default:"true"`
+	SystemPassword                  string        `envconfig:"SYSTEM_PASSWORD" default:""`
+	ParticipantRandomPasswordLength int           `envconfig:"PARTICIPANT_RANDOM_PASSWORD_LENGTH" default:"8"`
+	InitialMcqOptions               []string      `envconfig:"INITIAL_MCQ_OPTIONS" default:"A,B,C,D,E"`
+	CacheTTL                        time.Duration `envconfig:"CACHE_TTL" default:"2h"`
 
 	MySQLConfig MySQLConfig
 	AuthConfig  AuthConfig
+	RedisConfig RedisConfig
 }
 
 type AuthConfig struct {
