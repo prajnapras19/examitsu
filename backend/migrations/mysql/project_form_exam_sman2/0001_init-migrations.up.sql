@@ -57,7 +57,8 @@ CREATE TABLE participants(
     deleted_at TIMESTAMP DEFAULT NULL,
 
     CONSTRAINT PK_id PRIMARY KEY (id),
-    CONSTRAINT FOREIGN KEY (exam_id) REFERENCES exams(id)
+    CONSTRAINT FOREIGN KEY (exam_id) REFERENCES exams(id),
+    CONSTRAINT UNIQUE (exam_id, name)
 );
 
 CREATE TABLE submissions(
