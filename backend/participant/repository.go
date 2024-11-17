@@ -85,7 +85,7 @@ func (r *repository) GetParticipantByExamIDAndName(examID uint, name string) (*P
 		return &participant, nil
 	}
 
-	err = r.db.Where("exam_id = ? AND name = ?", examID, name).First(&participant).Error
+	err = r.db.Where("exam_id = ? AND name = ? AND not_archived", examID, name).First(&participant).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, lib.ErrParticipantNotFound

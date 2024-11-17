@@ -21,4 +21,6 @@ const (
 	DefaultQueryPaginationPageSize     = 10
 
 	InsertionBatchSize = 100
+
+	ExamSessionSubmissionCacheObjectKeyPrefix = "ExamSessionSubmissionCacheObject"
 )

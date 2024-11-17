@@ -95,6 +95,7 @@ func initDefault(cfg *config.Config) {
 	examSessionGroup.Use(api.JWTExamTokenMiddleware(participantService))
 	examSessionGroup.GET("/:serial/questions", handler.GetQuestionsIDByExamSerial)
 	examSessionGroup.GET("/:serial/questions/:id", handler.GetQuestionWithOptions)
+	examSessionGroup.POST("/:serial/questions/:id", handler.SubmitAnswer)
 
 	router.Run(fmt.Sprintf(":%d", cfg.RESTPort))
 }

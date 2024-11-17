@@ -31,6 +31,7 @@ type Handler interface {
 	// exam session
 	GetQuestionsIDByExamSerial(*gin.Context)
 	GetQuestionWithOptions(*gin.Context)
+	SubmitAnswer(*gin.Context)
 
 	CreateMcqOption(*gin.Context)
 	GetMcqOptionsByQuestionID(*gin.Context)

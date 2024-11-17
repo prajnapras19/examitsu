@@ -317,6 +317,10 @@ func (h *handler) GetQuestionWithOptions(c *gin.Context) {
 	})
 }
 
+func (h *handler) SubmitAnswer(c *gin.Context) {
+
+}
+
 func (h *handler) UpdateQuestion(c *gin.Context) {
 	var req UpdateQuestionRequest
 
