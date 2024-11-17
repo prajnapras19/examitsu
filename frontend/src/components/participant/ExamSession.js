@@ -12,8 +12,12 @@ const ExamSession = () => {
   const navigate = useNavigate();
   const [questionIDList, setQuestionIDList] = useState([]);
   const [currentQuestionNumber, setCurrentQuestionNumber] = useState(1);
+  const [currentQuestion, setCurrentQuestion] = useState(null);
 
   useEffect(() => {
+    if (!loading) {
+      return;
+    }
     const token = localStorage.getItem('examToken');
 
     if (!token) {
@@ -27,6 +31,22 @@ const ExamSession = () => {
     })
     .then(response => { 
       setQuestionIDList(response.data.data);
+      
+      if (currentQuestionNumber >= response.data.data.length) {
+        setCurrentQuestion(null);
+      } else {
+        axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/v1/exam-session/${examSerial}/questions/${response.data.data[currentQuestionNumber-1].id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+        })
+        .then(response => { 
+          setCurrentQuestion(response.data.data);
+        }).catch(error => {
+          setCurrentQuestion(null);
+          setLoading(false);
+        });
+      }
       setLoading(false);
     })
     .catch(error => {
@@ -38,6 +58,10 @@ const ExamSession = () => {
       }
       setLoading(false);
     });
+  }, [loading]);
+
+  useEffect(() => {
+    setLoading(true);
   }, [currentQuestionNumber]);
 
   if (loading) {
@@ -63,8 +87,8 @@ const ExamSession = () => {
     )
   }
 
-  const handleChooseQuestion = (id) => {
-    setCurrentQuestionNumber(id);
+  const handleChooseQuestion = (i) => {
+    setCurrentQuestionNumber(i);
   }
 
   return (
@@ -75,7 +99,17 @@ const ExamSession = () => {
         handleChooseQuestion={handleChooseQuestion}
       />
       <hr/>
-      <Container className="text-center mt-5 prevent-select">  
+      <Container className="mt-5 prevent-select">  
+        <h3>Soal {currentQuestionNumber}</h3>
+        {currentQuestion
+        ? (
+          <></>
+        )
+        : (
+          <p>
+            <i>Soal tidak ditemukan.</i>
+          </p>
+        )}
       </Container>
     </>
   );

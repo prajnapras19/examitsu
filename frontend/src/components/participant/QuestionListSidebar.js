@@ -23,7 +23,7 @@ const QuestionListSidebar = (props) => {
               <hr/>
               <Container onClick={() => {
                 handleClose();
-                handleChooseQuestion(data.id);
+                handleChooseQuestion(i + 1);
               }}>
                 Soal {i + 1}
               </Container>
