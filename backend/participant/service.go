@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang-jwt/jwt"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/exam"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
 )
 
@@ -26,15 +27,18 @@ type Service interface {
 type service struct {
 	cfg                   *config.Config
 	participantRepository Repository
+	examService           exam.Service
 }
 
 func NewService(
 	cfg *config.Config,
 	participantRepository Repository,
+	examService exam.Service,
 ) Service {
 	return &service{
 		cfg:                   cfg,
 		participantRepository: participantRepository,
+		examService:           examService,
 	}
 }
 
@@ -157,8 +161,13 @@ func (s *service) ValidateToken(tokenString string) (*lib.ExamTokenJWTClaims, er
 		return nil, lib.ErrUnauthorizedRequest
 	}
 
-	if _, err := s.GetParticipantByID(claims.ParticipantID); err != nil {
+	if participant, err := s.GetParticipantByID(claims.ParticipantID); err != nil {
 		return nil, lib.ErrUnauthorizedRequest
+	} else {
+		exam, err := s.examService.GetExamByID(participant.ExamID)
+		if err != nil || !exam.IsOpen {
+			return nil, lib.ErrUnauthorizedRequest
+		}
 	}
 
 	return claims, nil

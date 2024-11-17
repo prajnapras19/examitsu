@@ -37,7 +37,7 @@ func initDefault(cfg *config.Config) {
 	examService := exam.NewService(examRepository)
 	questionService := question.NewService(questionRepository)
 	mcqOptionService := mcqoption.NewService(mcqOptionRepository)
-	participantService := participant.NewService(cfg, participantRepository)
+	participantService := participant.NewService(cfg, participantRepository, examService)
 
 	// handlers
 	handler := api.NewHandler(

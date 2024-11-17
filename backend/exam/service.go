@@ -10,6 +10,7 @@ import (
 
 type Service interface {
 	CreateExam(exam *Exam) (*Exam, error)
+	GetExamByID(id uint) (*Exam, error)
 	GetExamBySerial(serial string) (*Exam, error)
 	GetExams(pagination *lib.QueryPagination, filter *GetExamsFilter) ([]*Exam, error)
 	UpdateExam(exam *Exam) error
@@ -49,7 +50,19 @@ func (s *service) GetExamBySerial(serial string) (*Exam, error) {
 		if errors.Is(err, lib.ErrExamNotFound) {
 			return nil, err
 		}
-		return nil, lib.ErrFailedToGetExamBySerial
+		return nil, lib.ErrFailedToGetExam
+	}
+	return res, nil
+}
+
+func (s *service) GetExamByID(id uint) (*Exam, error) {
+	res, err := s.examRepository.GetExamByID(id)
+	if err != nil {
+		log.Println("[exam][service][GetExamByID] failed to get exam by id:", err.Error())
+		if errors.Is(err, lib.ErrExamNotFound) {
+			return nil, err
+		}
+		return nil, lib.ErrFailedToGetExam
 	}
 	return res, nil
 }

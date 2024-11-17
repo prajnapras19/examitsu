@@ -213,6 +213,12 @@ func (h *handler) StartExam(c *gin.Context) {
 		})
 		return
 	}
+	if !exam.IsOpen {
+		c.JSON(http.StatusNotFound, lib.BaseResponse{
+			Message: lib.ErrExamNotFound.Error(),
+		})
+		return
+	}
 
 	req.ExamID = exam.ID
 	participant, err := h.participantService.GetParticipantByExamIDAndName(req.ExamID, req.Name)
