@@ -40,6 +40,13 @@ type MySQLConfig struct {
 	GORMLogLevel gormlogger.LogLevel `envconfig:"GORM_LOG_LEVEL" default:"4"`
 }
 
+type RedisConfig struct {
+	Hostname string `envconfig:"REDIS_HOST" default:""`
+	Password string `envconfig:"REDIS_PASSWORD" default:""`
+	Port     string `envconfig:"REDIS_PORT" default:"6379"`
+	DB       int    `envconfig:"REDIS_DATABASE" default:"0"`
+}
+
 func Get() *Config {
 	err := godotenv.Load()
 	if err != nil {
