@@ -10,7 +10,7 @@ CREATE TABLE exams(
     deleted_at TIMESTAMP DEFAULT NULL,
 
     CONSTRAINT PK_id PRIMARY KEY (id),
-	CONSTRAINT UC_serial UNIQUE (serial)
+	CONSTRAINT UC_serial UNIQUE (serial, not_archived)
 );
 
 CREATE TABLE questions(
