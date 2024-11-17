@@ -65,6 +65,7 @@ const ExamSession = () => {
   }, [loading]);
 
   useEffect(() => {
+    setCurrentQuestion(null);
     setLoading(true);
   }, [currentQuestionNumber]);
 
@@ -148,6 +149,7 @@ const ExamSession = () => {
                       name='option'
                       label={data.description}
                       onClick={() => handleClickOption(data.id)}
+                      defaultChecked={data.id === currentQuestion.answer}
                     />
                   ))}
                 </Form>

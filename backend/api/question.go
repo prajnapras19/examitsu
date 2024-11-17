@@ -43,6 +43,7 @@ type UpdateQuestionRequest struct {
 type ExamSessionQuestionData struct {
 	Question *QuestionData                `json:"question"`
 	Options  []*McqOptionWithoutPointData `json:"options"`
+	AnswerID uint                         `json:"answer"`
 }
 
 type SubmitAnswerRequest struct {
@@ -311,11 +312,20 @@ func (h *handler) GetQuestionWithOptions(c *gin.Context) {
 		return
 	}
 
-	// TODO: also get submission for the question id
+	answer, err := h.submissionService.GetAnswer(participant.ID, question.ID)
+	if err != nil {
+		if !errors.Is(err, lib.ErrAnswerNotFound) {
+			c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+	}
 
 	res := ExamSessionQuestionData{
 		Question: h.MapQuestionEntityToQuestionData(question),
 		Options:  h.MapMcqOptionEntityListToMcqOptionWithoutPointDataList(mcqOptions),
+		AnswerID: answer.McqOptionID,
 	}
 	c.JSON(http.StatusOK, lib.BaseResponse{
 		Message: constants.Success,

@@ -14,6 +14,7 @@ import (
 type Service interface {
 	Answer(cacheObject *ExamSessionSubmissionCacheObject) error
 	UpsertSubmissionInDB(key string) error
+	GetAnswer(participantID uint, questionID uint) (*Submission, error)
 }
 
 type service struct {
