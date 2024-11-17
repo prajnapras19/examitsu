@@ -5,6 +5,7 @@ const (
 	Success   = "success"
 	JWTClaims = "jwt_claims"
 	Error     = "error"
+	Worker    = "worker"
 
 	SystemUser = "SYSTEM"
 
@@ -23,4 +24,6 @@ const (
 	InsertionBatchSize = 100
 
 	ExamSessionSubmissionCacheObjectKeyPrefix = "ExamSessionSubmissionCacheObject"
+	UpdateAnswerQueueName                     = "updateAnswerQueue"
+	UpdateAnswerConsumerName                  = "updateAnswerConsumer"
 )

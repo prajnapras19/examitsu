@@ -410,7 +410,7 @@ func (h *handler) SubmitAnswer(c *gin.Context) {
 		ParticipantID: participant.ID,
 		QuestionID:    question.ID,
 		McqOptionID:   mcqOption.ID,
-		Timestamp:     time.Now(),
+		Timestamp:     time.Now().Truncate(time.Second),
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, lib.BaseResponse{

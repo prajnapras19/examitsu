@@ -16,6 +16,9 @@ type Config struct {
 	ParticipantRandomPasswordLength int           `envconfig:"PARTICIPANT_RANDOM_PASSWORD_LENGTH" default:"8"`
 	InitialMcqOptions               []string      `envconfig:"INITIAL_MCQ_OPTIONS" default:"A,B,C,D,E"`
 	CacheTTL                        time.Duration `envconfig:"CACHE_TTL" default:"2h"`
+	Role                            string        `envconfig:"ROLE" default:""`
+
+	UpdateAnswerQueuePrefetchLimit int64 `envconfig:"UPDATE_ANSWER_QUEUE_PREFETCH_LIMIT" default:"50"`
 
 	MySQLConfig MySQLConfig
 	AuthConfig  AuthConfig

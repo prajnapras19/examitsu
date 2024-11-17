@@ -4,28 +4,43 @@ import (
 	"fmt"
 	"net/http"
 
+	rmq "github.com/adjust/rmq/v5"
 	"github.com/gin-gonic/gin"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/adminauth"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/api"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/client/mysql"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/client/redis"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/exam"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/mcqoption"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/participant"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/question"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/submission"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/worker"
 )
 
 func main() {
 	cfg := config.Get()
-	initDefault(cfg)
+	if cfg.Role == constants.Worker {
+		initWorker(cfg)
+	} else {
+		initDefault(cfg)
+	}
 }
 
 func initDefault(cfg *config.Config) {
 	// clients
 	dbmysql := mysql.NewService(cfg.MySQLConfig)
 	dbredis := redis.NewService(cfg.RedisConfig)
+	redisMQConnection, err := rmq.OpenConnectionWithRedisClient(constants.Examitsu, dbredis.GetClient(), nil)
+	if err != nil {
+		panic(err)
+	}
+	updateAnswerQueue, err := redisMQConnection.OpenQueue(constants.UpdateAnswerQueueName)
+	if err != nil {
+		panic(err)
+	}
 
 	// repositories
 	examRepository := exam.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient())
@@ -40,7 +55,7 @@ func initDefault(cfg *config.Config) {
 	questionService := question.NewService(questionRepository)
 	mcqOptionService := mcqoption.NewService(mcqOptionRepository)
 	participantService := participant.NewService(cfg, participantRepository, examService)
-	submissionService := submission.NewService(submissionRepository)
+	submissionService := submission.NewService(submissionRepository, dbredis.GetClient(), updateAnswerQueue)
 
 	// handlers
 	handler := api.NewHandler(
@@ -100,6 +115,48 @@ func initDefault(cfg *config.Config) {
 	examSessionGroup.GET("/:serial/questions", handler.GetQuestionsIDByExamSerial)
 	examSessionGroup.GET("/:serial/questions/:id", handler.GetQuestionWithOptions)
 	examSessionGroup.POST("/:serial/questions/:id", handler.SubmitAnswer)
+
+	router.Run(fmt.Sprintf(":%d", cfg.RESTPort))
+}
+
+func initWorker(cfg *config.Config) {
+	// clients
+	dbmysql := mysql.NewService(cfg.MySQLConfig)
+	dbredis := redis.NewService(cfg.RedisConfig)
+	redisMQConnection, err := rmq.OpenConnectionWithRedisClient(constants.Examitsu, dbredis.GetClient(), nil)
+	if err != nil {
+		panic(err)
+	}
+	updateAnswerQueue, err := redisMQConnection.OpenQueue(constants.UpdateAnswerQueueName)
+	if err != nil {
+		panic(err)
+	}
+
+	// repositories
+	submissionRepository := submission.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient())
+
+	// services
+	submissionService := submission.NewService(submissionRepository, dbredis.GetClient(), updateAnswerQueue)
+
+	// consumers
+	updateAnswerConsumer := worker.NewUpdateAnswerQueueConsumer(submissionService)
+
+	// routes
+	router := gin.Default()
+	if cfg.AllowCORS {
+		router.Use(api.CORSMiddleware())
+	}
+	router.GET("/_health", func(gc *gin.Context) {
+		gc.Status(http.StatusOK)
+	})
+
+	// workers
+	workerService := worker.NewService(
+		cfg,
+		updateAnswerQueue,
+		updateAnswerConsumer,
+	)
+	workerService.InitConsumers()
 
 	router.Run(fmt.Sprintf(":%d", cfg.RESTPort))
 }

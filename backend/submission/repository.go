@@ -49,7 +49,7 @@ func (r *repository) GetSubmissionByParticipantIDAndQuestionID(participantID uin
 		return &submission, nil
 	}
 
-	err = r.db.Where("participant_id = ? AND question_id AND not_archived", participantID, questionID).First(&submission).Error
+	err = r.db.Where("participant_id = ? AND question_id = ? AND not_archived", participantID, questionID).First(&submission).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, lib.ErrSubmissionNotFound
@@ -74,7 +74,7 @@ func (r *repository) SaveCacheObject(cacheObject *ExamSessionSubmissionCacheObje
 
 func (r *repository) UpsertSubmissionInDB(cacheObject *ExamSessionSubmissionCacheObject) error {
 	var submission Submission
-	err := r.db.Where("participant_id = ? AND question_id AND not_archived", cacheObject.ParticipantID, cacheObject.QuestionID).First(&submission).Error
+	err := r.db.Where("participant_id = ? AND question_id = ? AND not_archived", cacheObject.ParticipantID, cacheObject.QuestionID).First(&submission).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return r.db.Create(&Submission{
@@ -93,7 +93,11 @@ func (r *repository) UpsertSubmissionInDB(cacheObject *ExamSessionSubmissionCach
 	}
 
 	if submission.UpdatedAt != cacheObject.Timestamp {
-		return r.db.Where("participant_id = ? AND question_id AND not_archived", cacheObject.ParticipantID, cacheObject.QuestionID).Update("mcq_option_id", cacheObject.McqOptionID).Error
+		return r.db.Model(submission).Where("participant_id = ? AND question_id = ? AND not_archived", cacheObject.ParticipantID, cacheObject.QuestionID).Updates(
+			map[string]interface{}{
+				"mcq_option_id": cacheObject.McqOptionID,
+				"updated_at":    cacheObject.Timestamp,
+			}).Error
 	}
 	return nil
 }
