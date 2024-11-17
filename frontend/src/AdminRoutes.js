@@ -9,6 +9,7 @@ import EditExam from './components/admin/exam/EditExam';
 import ReadQuestions from './components/admin/question/ReadQuestions';
 import ReadParticipants from './components/admin/participants/ReadParticipants';
 import EditParticipant from './components/admin/participants/EditParticipants';
+import AddParticipants from './components/admin/participants/AddParticipants';
 
 function AdminRoutes() {
   const adminAuth = useAdminAuth();
@@ -21,6 +22,7 @@ function AdminRoutes() {
       <Route path="/exams/:examSerial/edit" element={<EditExam auth={adminAuth} />} />
       <Route path="/exams/:examSerial/questions" element={<ReadQuestions auth={adminAuth} />} />
       <Route path="/exams/:examSerial/participants" element={<ReadParticipants auth={adminAuth} />} />
+      <Route path="/exams/:examSerial/participants/new" element={<AddParticipants auth={adminAuth} />} />
       <Route path="/exams/:examSerial/participants/:participantId/edit" element={<EditParticipant auth={adminAuth} />} />
       <Route path="*" element={<NotFoundPage/>}/>
     </Routes>

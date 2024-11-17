@@ -7,6 +7,7 @@ import { Container, Spinner, Table, Button } from 'react-bootstrap';
 import BackToHomepageCard from '../home/BackToHomepageCard';
 import DeleteConfirmationModal from '../../etc/DeleteConfirmationModal';
 import ReadExamsMenuCard from '../exam/ReadExamsMenuCard';
+import AddParticipantsCard from './AddParticipantsCard';
 
 const ReadParticipants = (props) => {
   const { auth } = props;
@@ -129,6 +130,7 @@ const ReadParticipants = (props) => {
         <Container className="card-grid">
           <BackToHomepageCard></BackToHomepageCard>
           <ReadExamsMenuCard></ReadExamsMenuCard>
+          <AddParticipantsCard></AddParticipantsCard>
         </Container>
       </Container>
       <hr/>
