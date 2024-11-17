@@ -204,12 +204,10 @@ func (h *handler) GetQuestionsIDByExamSerial(c *gin.Context) {
 	}
 
 	if participant.ExamID != exam.ID {
-		if errors.Is(err, lib.ErrExamNotFound) {
-			c.JSON(http.StatusUnauthorized, lib.BaseResponse{
-				Message: lib.ErrUnauthorizedRequest.Error(),
-			})
-			return
-		}
+		c.JSON(http.StatusUnauthorized, lib.BaseResponse{
+			Message: lib.ErrUnauthorizedRequest.Error(),
+		})
+		return
 	}
 
 	svcRes, err := h.questionService.GetQuestionsIDByExamID(exam.ID)
