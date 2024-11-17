@@ -6,6 +6,8 @@ import NotFoundPage from './components/etc/404';
 import ScrollToTop from './components/etc/ScrollToTop';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import AdminRoutes from './AdminRoutes';
+import ParticipantRoutes from './ParticipantRoutes';
+import StartExam from './components/participant/StartExam';
 
 function App() {
   return (
@@ -15,6 +17,8 @@ function App() {
         <ToastContainer />
         <Routes>
           <Route path="/admin/*" element={<AdminRoutes/>}/>
+          <Route path="/public/exams/:examSerial" element={<StartExam/>} />
+          <Route path="/public/*" element={<ParticipantRoutes/>}/>
           <Route path="*" element={<NotFoundPage/>}/>
         </Routes>
       </Router>
