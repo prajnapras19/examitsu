@@ -32,7 +32,7 @@ const ExamSession = () => {
     .then(response => { 
       setQuestionIDList(response.data.data);
       
-      if (currentQuestionNumber >= response.data.data.length) {
+      if (currentQuestionNumber > response.data.data.length) {
         setCurrentQuestion(null);
       } else {
         axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/v1/exam-session/${examSerial}/questions/${response.data.data[currentQuestionNumber-1].id}`, {
