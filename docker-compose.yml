@@ -2,10 +2,14 @@ services:
   backend-redis:
     restart: always
     image: redis:7.0
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
     networks:
       - backend
     ports:
       - "6379:6379"
+
+volumes:
+  redis-data:
 
 networks:
   backend:
