@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import InternalServerErrorPage from '../etc/500';
-import { Container, Spinner } from 'react-bootstrap';
+import { Container, Spinner, Form } from 'react-bootstrap';
 import axios from 'axios';
 import QuestionListSidebar from './QuestionListSidebar';
 import EditorJsHTML from 'editorjs-html';
@@ -15,6 +15,7 @@ const ExamSession = () => {
   const [currentQuestionNumber, setCurrentQuestionNumber] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const edjsParser = EditorJsHTML();
+  const [selectedOption, setSelectedOption] = useState(0);
 
   useEffect(() => {
     if (!loading) {
@@ -25,7 +26,7 @@ const ExamSession = () => {
     if (!token) {
       navigate('/404');
     }
-
+    
     axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/v1/exam-session/${examSerial}/questions`, {
       headers: {
         'Authorization': `Bearer ${token}`
@@ -33,6 +34,7 @@ const ExamSession = () => {
     })
     .then(response => { 
       setQuestionIDList(response.data.data);
+      setSelectedOption(0);
       
       if (currentQuestionNumber > response.data.data.length) {
         setCurrentQuestion(null);
@@ -101,7 +103,10 @@ const ExamSession = () => {
       parsedHTML = `<div></div>`;
     }
   }
-  console.log(parsedHTML);
+  
+  const handleClickOption = (optionId) => {
+    console.log('optionId', optionId);
+  }
 
   return (
     <>
@@ -113,7 +118,7 @@ const ExamSession = () => {
       <hr/>
       <h3 className="text-center">Soal {currentQuestionNumber}</h3>
       <hr/>
-      <Container className="mt-3 prevent-select">    
+      <Container className="mt-5 prevent-select">    
         {currentQuestion
         ? (
           <div dangerouslySetInnerHTML={{ __html: parsedHTML }} />
@@ -124,9 +129,40 @@ const ExamSession = () => {
           </p>
         )}
       </Container>
-      <hr/>
-      <Container className="mt-3 prevent-select">    
-      </Container>
+      {currentQuestion
+      ? (
+        <>
+          <hr/>
+          <Container className="mt-3 prevent-select">
+            <h6>Pilihan Jawaban:</h6>
+          </Container>
+          <hr/>
+          <Container className="mt-3 prevent-select">
+            {currentQuestion.options
+              ? (
+                <Form className="ms-3 px-3" style={{fontSize: 20}}>
+                  {currentQuestion.options.map((data) => (
+                    <Form.Check
+                      size='lg'
+                      type='radio'
+                      name='option'
+                      label={data.description}
+                      onClick={() => handleClickOption(data.id)}
+                    />
+                  ))}
+                </Form>
+              )
+              : (
+                <></>
+              )
+            }
+          </Container>
+        </>
+      )
+      : (
+        <></>
+      )}
+      
     </>
   );
 }
