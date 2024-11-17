@@ -77,7 +77,17 @@ func (r *repository) UpsertSubmissionInDB(cacheObject *ExamSessionSubmissionCach
 	err := r.db.Where("participant_id = ? AND question_id AND not_archived", cacheObject.ParticipantID, cacheObject.QuestionID).First(&submission).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return r.db.Create(submission).Error
+			return r.db.Create(&Submission{
+				BaseModel: lib.BaseModel{
+					Model: gorm.Model{
+						CreatedAt: cacheObject.Timestamp,
+						UpdatedAt: cacheObject.Timestamp,
+					},
+				},
+				ParticipantID: cacheObject.ParticipantID,
+				QuestionID:    cacheObject.QuestionID,
+				McqOptionID:   cacheObject.McqOptionID,
+			}).Error
 		}
 		return err
 	}

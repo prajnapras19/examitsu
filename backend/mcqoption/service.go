@@ -11,6 +11,7 @@ type Service interface {
 	CreateMcqOption(mcqOption *McqOption) (*McqOption, error)
 	GetMcqOptionsByQuestionID(questionID uint) ([]*McqOption, error)
 	UpdateMcqOption(mcqOption *McqOption) error
+	GetMcqOptionByID(id uint) (*McqOption, error)
 	DeleteMcqOptionByID(id uint) error
 }
 
@@ -46,6 +47,18 @@ func (s *service) GetMcqOptionsByQuestionID(questionID uint) ([]*McqOption, erro
 			return nil, err
 		}
 		return nil, lib.ErrFailedToGetMcqOptions
+	}
+	return res, nil
+}
+
+func (s *service) GetMcqOptionByID(id uint) (*McqOption, error) {
+	res, err := s.mcqOptionRepository.GetMcqOptionByID(id)
+	if err != nil {
+		log.Println("[mcqoption][service][GetMcqOptionByID] failed to get mcqOption by id:", err.Error())
+		if errors.Is(err, lib.ErrMcqOptionNotFound) {
+			return nil, err
+		}
+		return nil, lib.ErrFailedToGetMcqOption
 	}
 	return res, nil
 }

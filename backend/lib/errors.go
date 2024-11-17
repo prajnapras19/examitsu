@@ -50,6 +50,7 @@ var (
 	// mcqoption.service
 	ErrFailedToCreateMcqOption = errors.New("failed to create mcq option")
 	ErrFailedToGetMcqOptions   = errors.New("failed to get mcq options")
+	ErrFailedToGetMcqOption    = errors.New("failed to get mcq option")
 	ErrFailedToUpdateMcqOption = errors.New("failed to update mcq option")
 	ErrFailedToDeleteMcqOption = errors.New("failed to delete mcq option")
 
@@ -65,4 +66,9 @@ var (
 
 	// submission.repository
 	ErrSubmissionNotFound = errors.New("failed to get submission")
+
+	// submission.service
+	ErrFailedToSaveAnswer = errors.New("failed to save answer")
+	ErrAnswerNotFound     = errors.New("answer not found")
+	ErrFailedToGetAnswer  = errors.New("failed to get answer")
 )

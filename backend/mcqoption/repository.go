@@ -16,6 +16,7 @@ import (
 type Repository interface {
 	CreateMcqOption(mcqOption *McqOption) (*McqOption, error)
 	GetMcqOptionsByQuestionID(questionID uint) ([]*McqOption, error)
+	GetMcqOptionByID(id uint) (*McqOption, error)
 	UpdateMcqOption(mcqOption *McqOption) error
 	DeleteMcqOptionByID(id uint) error
 }
@@ -66,7 +67,7 @@ func (r *repository) GetMcqOptionsByQuestionID(questionID uint) ([]*McqOption, e
 	return mcqOptions, err
 }
 
-func (r *repository) GetMcqOptionsByID(id uint) (*McqOption, error) {
+func (r *repository) GetMcqOptionByID(id uint) (*McqOption, error) {
 	var mcqOption McqOption
 
 	cacheKey := r.GetMcqOptionByIDCacheKey(id)
@@ -90,7 +91,7 @@ func (r *repository) GetMcqOptionsByID(id uint) (*McqOption, error) {
 }
 
 func (r *repository) UpdateMcqOption(mcqOption *McqOption) error {
-	currentData, err := r.GetMcqOptionsByID(mcqOption.ID)
+	currentData, err := r.GetMcqOptionByID(mcqOption.ID)
 	if err != nil {
 		return err
 	}
@@ -110,7 +111,7 @@ func (r *repository) UpdateMcqOption(mcqOption *McqOption) error {
 }
 
 func (r *repository) DeleteMcqOptionByID(id uint) error {
-	currentData, err := r.GetMcqOptionsByID(id)
+	currentData, err := r.GetMcqOptionByID(id)
 	if err != nil {
 		return err
 	}

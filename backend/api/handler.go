@@ -8,6 +8,7 @@ import (
 	"github.com/prajnapras19/project-form-exam-sman2/backend/mcqoption"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/participant"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/question"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/submission"
 )
 
 type Handler interface {
@@ -52,6 +53,7 @@ type handler struct {
 	questionService    question.Service
 	mcqOptionService   mcqoption.Service
 	participantService participant.Service
+	submissionService  submission.Service
 }
 
 func NewHandler(
@@ -61,6 +63,7 @@ func NewHandler(
 	questionService question.Service,
 	mcqOptionService mcqoption.Service,
 	participantService participant.Service,
+	submissionService submission.Service,
 ) Handler {
 	return &handler{
 		cfg:                cfg,
@@ -69,5 +72,6 @@ func NewHandler(
 		questionService:    questionService,
 		mcqOptionService:   mcqOptionService,
 		participantService: participantService,
+		submissionService:  submissionService,
 	}
 }
