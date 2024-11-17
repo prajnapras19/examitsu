@@ -27,7 +27,12 @@ const ExamSession = () => {
       setLoading(false);
     })
     .catch(error => {
-      setError(error.message);
+      if (error.status < 500) {
+        navigate('/404');
+      }
+      else {
+        setError(error.message);
+      }
       setLoading(false);
     });
   });
