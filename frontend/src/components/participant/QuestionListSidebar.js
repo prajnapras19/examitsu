@@ -15,13 +15,13 @@ const QuestionListSidebar = (props) => {
       </Button>
       <Offcanvas show={show} onHide={handleClose} {...props}>
         <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Daftar Soal</Offcanvas.Title>
+          <Offcanvas.Title className="prevent-select">Daftar Soal</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>
           {questionIDList.map((data, i) => (
             <>
               <hr/>
-              <Container onClick={() => {
+              <Container className="prevent-select" onClick={() => {
                 handleClose();
                 handleChooseQuestion(i + 1);
               }}>

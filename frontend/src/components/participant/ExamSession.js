@@ -117,7 +117,7 @@ const ExamSession = () => {
         handleChooseQuestion={handleChooseQuestion}
       />
       <hr/>
-      <h3 className="text-center">Soal {currentQuestionNumber}</h3>
+      <h3 className="text-center prevent-select">Soal {currentQuestionNumber}</h3>
       <hr/>
       <Container className="mt-5 prevent-select">    
         {currentQuestion
