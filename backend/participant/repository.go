@@ -21,6 +21,9 @@ type Repository interface {
 	GetParticipantByExamIDAndName(examID uint, name string) (*Participant, error)
 	UpdateParticipant(participant *Participant) error
 	DeleteParticipantByID(id uint) error
+
+	GetParticipantByIDCacheKey(id uint) string
+	GetParticipantByExamIDAndNameCacheKey(examID uint, name string) string
 }
 
 type repository struct {

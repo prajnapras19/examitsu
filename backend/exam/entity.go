@@ -1,6 +1,8 @@
 package exam
 
 import (
+	"time"
+
 	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
 	"gorm.io/gorm"
@@ -25,4 +27,14 @@ func (f *GetExamsFilter) Scope() []func(db *gorm.DB) *gorm.DB {
 	}
 
 	return scopes
+}
+
+// copy of participant.Participant
+type Participant struct {
+	lib.BaseModel
+	ExamID    uint
+	Name      string
+	Password  string
+	StartedAt *time.Time
+	EndedAt   *time.Time
 }

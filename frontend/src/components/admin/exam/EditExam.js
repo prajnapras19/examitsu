@@ -23,7 +23,7 @@ const EditExam = (props) => {
       required: true,
     },
     {
-      label: 'Sudah / Masih Bisa Dikerjakan?',
+      label: 'Sudah / Masih Bisa Dikerjakan? (Menonaktifkan ujian juga akan secara otomatis mengumpulkan semua sesi ujian yang sudah dimulai)',
       name: 'is_open',
       type: 'boolean',
       defaultValue: false,

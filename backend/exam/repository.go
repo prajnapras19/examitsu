@@ -119,7 +119,28 @@ func (r *repository) UpdateExam(exam *Exam) error {
 			return err
 		}
 
-		return nil
+		var hangingParticipants []*Participant
+		err := r.db.Where("started_at IS NOT NULL AND ended_at IS NULL").Find(&hangingParticipants).Error
+		if err != nil {
+			return err
+		}
+
+		var updatedExam Exam
+		err = tx.Where("serial = ?", exam.Serial).First(&updatedExam).Error
+		if err != nil {
+			return err
+		}
+
+		if len(hangingParticipants) == 0 {
+			return nil
+		}
+
+		for i := range hangingParticipants {
+			r.cache.Del(context.Background(), r.GetParticipantByIDCacheKey(hangingParticipants[i].ID))
+			r.cache.Del(context.Background(), r.GetParticipantByExamIDAndNameCacheKey(updatedExam.ID, hangingParticipants[i].Name))
+		}
+
+		return r.db.Model(&Participant{}).Where("started_at IS NOT NULL AND ended_at IS NULL").Update("ended_at", updatedExam.UpdatedAt).Error
 	})
 }
 
@@ -149,4 +170,12 @@ func (r *repository) GetExamBySerialCacheKey(serial string) string {
 
 func (r *repository) GetExamByIDCacheKey(id uint) string {
 	return fmt.Sprintf("exam:id:%d", id)
+}
+
+func (r *repository) GetParticipantByIDCacheKey(id uint) string {
+	return fmt.Sprintf("participant:id:%d", id)
+}
+
+func (r *repository) GetParticipantByExamIDAndNameCacheKey(examID uint, name string) string {
+	return fmt.Sprintf("participant:examID:%d:name:%s", examID, name)
 }
