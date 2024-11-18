@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import InternalServerErrorPage from '../etc/500';
-import { Container, Spinner, Form } from 'react-bootstrap';
+import { Button, Container, Spinner, Form, Row, Col } from 'react-bootstrap';
 import axios from 'axios';
 import QuestionListSidebar from './QuestionListSidebar';
 import EditorJsHTML from 'editorjs-html';
 import { toast } from 'react-toastify';
+import FinishPage from './FinishPage';
+import SubmitConfirmationModal from './SubmitConfirmationModal';
 
 const ExamSession = () => {
   const [loading, setLoading] = useState(true);
@@ -17,6 +19,49 @@ const ExamSession = () => {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const edjsParser = EditorJsHTML();
   const [disableChooseOption, setDisableChooseOption] = useState(false);
+
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const handleShowSubmitModal = () => {
+    setShowSubmitModal(true);
+  }
+  const handleCloseSubmitModal = () => {
+    setShowSubmitModal(false);
+  }
+
+  const handleSubmit = () => {
+    handleCloseSubmitModal();
+    setLoadingSubmit(true);
+    const token = localStorage.getItem('examToken');
+
+    if (!token) {
+      navigate('/404');
+    }
+    axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/exam-session/${examSerial}/submit`,
+      {},
+      { 
+        headers: {
+        'Authorization': `Bearer ${token}`
+        },
+      }
+    )
+    .then(response => {
+      setIsSubmitted(true);
+    })
+    .catch(err => {
+      toast.error(`Gagal mengumpulkan ujian. Silakan coba beberapa saat lagi.`, {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    }).finally(() => {
+      setLoadingSubmit(false);
+    });
+  }
 
   useEffect(() => {
     if (!loading) {
@@ -70,7 +115,7 @@ const ExamSession = () => {
     setLoading(true);
   }, [currentQuestionNumber]);
 
-  if (loading) {
+  if (loading || loadingSubmit) {
     return (
       <Container className="text-center">
         <Spinner animation="border" />
@@ -81,6 +126,12 @@ const ExamSession = () => {
 
   if (error) {
     return <InternalServerErrorPage></InternalServerErrorPage>
+  }
+
+  if (isSubmitted) {
+    return (
+      <FinishPage></FinishPage>
+    )
   }
 
   if (questionIDList.length == 0) {
@@ -155,10 +206,13 @@ const ExamSession = () => {
   return (
     <>
       <hr/>
-      <QuestionListSidebar
-        questionIDList={questionIDList}
-        handleChooseQuestion={handleChooseQuestion}
-      />
+        <Container className="prevent-select">
+          <QuestionListSidebar
+            questionIDList={questionIDList}
+            handleChooseQuestion={handleChooseQuestion}
+            handleShowSubmitModal={handleShowSubmitModal}
+          />
+        </Container>
       <hr/>
       <h3 className="text-center prevent-select">Soal {currentQuestionNumber}</h3>
       <hr/>
@@ -203,6 +257,11 @@ const ExamSession = () => {
               )
             }
           </Container>
+          <SubmitConfirmationModal
+            show={showSubmitModal}
+            handleClose={handleCloseSubmitModal}
+            handleSubmit={handleSubmit}
+          />
         </>
       )
       : (
