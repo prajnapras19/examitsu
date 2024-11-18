@@ -205,7 +205,7 @@ const ExamSession = () => {
 
   return (
     <>
-      <hr/>
+      <hr className='mt-5'/>
         <Container className="prevent-select">
           <QuestionListSidebar
             questionIDList={questionIDList}
@@ -262,6 +262,23 @@ const ExamSession = () => {
             handleClose={handleCloseSubmitModal}
             handleSubmit={handleSubmit}
           />
+          <Container className="mt-5">
+              <Button
+                variant="primary"
+                onClick={() => setCurrentQuestionNumber(currentQuestionNumber - 1)}
+                disabled={currentQuestionNumber === 1}
+                className='me-3'
+              >
+                &lt;&lt; Soal sebelumnya
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => setCurrentQuestionNumber(currentQuestionNumber + 1)}
+                disabled={currentQuestionNumber === questionIDList.length}
+              >
+                Soal selanjutnya &gt;&gt;
+              </Button>
+          </Container>
         </>
       )
       : (
