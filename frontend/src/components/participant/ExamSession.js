@@ -5,6 +5,7 @@ import { Container, Spinner, Form } from 'react-bootstrap';
 import axios from 'axios';
 import QuestionListSidebar from './QuestionListSidebar';
 import EditorJsHTML from 'editorjs-html';
+import { toast } from 'react-toastify';
 
 const ExamSession = () => {
   const [loading, setLoading] = useState(true);
@@ -15,7 +16,7 @@ const ExamSession = () => {
   const [currentQuestionNumber, setCurrentQuestionNumber] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const edjsParser = EditorJsHTML();
-  const [selectedOption, setSelectedOption] = useState(0);
+  const [disableChooseOption, setDisableChooseOption] = useState(false);
 
   useEffect(() => {
     if (!loading) {
@@ -34,7 +35,7 @@ const ExamSession = () => {
     })
     .then(response => { 
       setQuestionIDList(response.data.data);
-      setSelectedOption(0);
+      setDisableChooseOption(false);
       
       if (currentQuestionNumber > response.data.data.length) {
         setCurrentQuestion(null);
@@ -105,8 +106,50 @@ const ExamSession = () => {
     }
   }
   
-  const handleClickOption = (optionId) => {
-    console.log('optionId', optionId);
+  const handleClickOption = async (optionId) => {
+    setDisableChooseOption(true);
+    try {
+      const token = localStorage.getItem('examToken');
+
+      if (!token) {
+        navigate('/404');
+      }
+
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/exam-session/${examSerial}/questions/${currentQuestion.question.id}`,
+        {
+          mcq_option_id: optionId,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+        }
+      );
+      
+      toast.success(`Jawaban untuk nomor ${currentQuestionNumber} berhasil disimpan!`, {
+        position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } catch (err) {
+      if (err.status < 500) {
+        navigate('/404');
+      } else {
+        toast.error(`Gagal menyimpan jawaban untuk nomor ${currentQuestionNumber}, silakan coba beberapa saat lagi.`, {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
+    } finally {
+      setDisableChooseOption(false);
+    }
   }
 
   return (
@@ -150,6 +193,7 @@ const ExamSession = () => {
                       label={data.description}
                       onClick={() => handleClickOption(data.id)}
                       defaultChecked={data.id === currentQuestion.answer}
+                      disabled={disableChooseOption}
                     />
                   ))}
                 </Form>
