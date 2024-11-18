@@ -58,7 +58,17 @@ const StartExam = () => {
       navigate(`/exam-session/${examSerial}`);
     } catch (error) {
       console.error(error);
-      if (error.status === 404) {
+      if (error.status === 400) {
+        toast.error(`Peserta sudah mengumpulkan ujian.`, {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
+      else if (error.status === 404) {
         toast.error(`Peserta tidak ditemukan. Silakan hubungi pengawas.`, {
           position: "top-center",
           autoClose: 5000,
