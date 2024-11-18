@@ -10,6 +10,7 @@ var (
 
 	// handler.participant
 	ErrExamAlreadySubmitted = errors.New("exam already submitted")
+	ErrExamNotStarted       = errors.New("exam not started")
 
 	// lib.jwt_claims
 	ErrFailedToParseJWTClaimsInContext = errors.New("failed to parse jwt claims in context")

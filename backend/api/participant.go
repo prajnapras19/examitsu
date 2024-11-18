@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -249,12 +250,12 @@ func (h *handler) StartExam(c *gin.Context) {
 		return
 	}
 
-	// if exam is already started
-	if participant.StartedAt != nil {
+	// if exam is not yet started
+	if participant.StartedAt == nil {
 		currentTime := time.Now()
 		participant.StartedAt = &currentTime
 		err = h.participantService.UpdateParticipant(participant)
-		if err == nil {
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, lib.BaseResponse{
 				Message: err.Error(),
 			})
@@ -269,6 +270,78 @@ func (h *handler) StartExam(c *gin.Context) {
 		Data: StartExamResponse{
 			Token: examToken,
 		},
+	})
+}
+
+func (h *handler) SubmitExam(c *gin.Context) {
+	jwtClaims, err := lib.GetExamTokenJWTClaimsFromContext(c)
+	if err != nil {
+		log.Printf("[handler][participant][SubmitExam] error when get jwt: %s", err.Error())
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: lib.ErrUnknownError.Error(),
+		})
+		return
+	}
+
+	participant, err := h.participantService.GetParticipantByID(jwtClaims.ParticipantID)
+	if err != nil {
+		if errors.Is(err, lib.ErrParticipantNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	if participant.StartedAt == nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrExamNotStarted.Error(),
+		})
+		return
+	}
+
+	if participant.EndedAt != nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrExamAlreadySubmitted.Error(),
+		})
+		return
+	}
+
+	exam, err := h.examService.GetExamByID(participant.ExamID)
+	if err != nil {
+		if errors.Is(err, lib.ErrExamNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	if !exam.IsOpen || exam.Serial != c.Param(constants.Serial) {
+		c.JSON(http.StatusNotFound, lib.BaseResponse{
+			Message: lib.ErrExamNotFound.Error(),
+		})
+		return
+	}
+
+	currentTime := time.Now()
+	participant.EndedAt = &currentTime
+	err = h.participantService.UpdateParticipant(participant)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, lib.BaseResponse{
+		Message: constants.Success,
 	})
 }
 

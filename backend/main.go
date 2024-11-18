@@ -115,6 +115,7 @@ func initDefault(cfg *config.Config) {
 	examSessionGroup.GET("/:serial/questions", handler.GetQuestionsIDByExamSerial)
 	examSessionGroup.GET("/:serial/questions/:id", handler.GetQuestionWithOptions)
 	examSessionGroup.POST("/:serial/questions/:id", handler.SubmitAnswer)
+	examSessionGroup.POST("/:serial/submit", handler.SubmitExam)
 
 	router.Run(fmt.Sprintf(":%d", cfg.RESTPort))
 }

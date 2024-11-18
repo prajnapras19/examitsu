@@ -206,6 +206,20 @@ func (h *handler) GetQuestionsIDByExamSerial(c *gin.Context) {
 		return
 	}
 
+	if participant.StartedAt == nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrExamNotStarted.Error(),
+		})
+		return
+	}
+
+	if participant.EndedAt != nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrExamAlreadySubmitted.Error(),
+		})
+		return
+	}
+
 	examSerial := c.Param(constants.Serial)
 	exam, err := h.examService.GetExamBySerial(examSerial)
 	if err != nil {
@@ -255,8 +269,28 @@ func (h *handler) GetQuestionWithOptions(c *gin.Context) {
 
 	participant, err := h.participantService.GetParticipantByID(jwtClaims.ParticipantID)
 	if err != nil {
+		if errors.Is(err, lib.ErrParticipantNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
 			Message: err.Error(),
+		})
+		return
+	}
+
+	if participant.StartedAt == nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrExamNotStarted.Error(),
+		})
+		return
+	}
+
+	if participant.EndedAt != nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrExamAlreadySubmitted.Error(),
 		})
 		return
 	}
@@ -322,10 +356,14 @@ func (h *handler) GetQuestionWithOptions(c *gin.Context) {
 		}
 	}
 
+	answerID := uint(0)
+	if answer != nil {
+		answerID = answer.McqOptionID
+	}
 	res := ExamSessionQuestionData{
 		Question: h.MapQuestionEntityToQuestionData(question),
 		Options:  h.MapMcqOptionEntityListToMcqOptionWithoutPointDataList(mcqOptions),
-		AnswerID: answer.McqOptionID,
+		AnswerID: answerID,
 	}
 	c.JSON(http.StatusOK, lib.BaseResponse{
 		Message: constants.Success,
@@ -353,8 +391,28 @@ func (h *handler) SubmitAnswer(c *gin.Context) {
 
 	participant, err := h.participantService.GetParticipantByID(jwtClaims.ParticipantID)
 	if err != nil {
+		if errors.Is(err, lib.ErrParticipantNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
 			Message: err.Error(),
+		})
+		return
+	}
+
+	if participant.StartedAt == nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrExamNotStarted.Error(),
+		})
+		return
+	}
+
+	if participant.EndedAt != nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrExamAlreadySubmitted.Error(),
 		})
 		return
 	}
