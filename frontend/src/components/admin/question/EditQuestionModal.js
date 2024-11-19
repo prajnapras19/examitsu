@@ -7,6 +7,7 @@ import Underline from "@editorjs/underline";
 import List from "@editorjs/list";
 import Header from "@editorjs/header";
 import { toast } from 'react-toastify';
+import ImageTool from '@editorjs/image';
 
 const EditQuestionModal = (props) => {
     const {show, onClose, questionId, auth} = props;
@@ -39,6 +40,51 @@ const EditQuestionModal = (props) => {
             paragraph: {
               class: Paragraph,
               inlineToolbar: ["bold", "italic", "underline"],
+            },
+            image: {
+              class: ImageTool,
+              config: {
+                uploader: {
+                  async uploadByFile(file) {
+                    // Fetch the signed URL
+                    const getFileUploadURL = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/questions/file-upload-url`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${auth.token}`,
+                      },
+                      body: JSON.stringify({ file_type: file.type }),
+                    });
+        
+                    if (!getFileUploadURL.ok) {
+                      throw new Error('Gagal mendapatkan alamat pengunggahan!');
+                    }
+        
+                    const res = await getFileUploadURL.json();
+                    const { upload_url, public_url } = res.data;
+                    console.log('res', res.data);
+        
+                    // Upload file to the signed URL
+                    const uploadResponse = await fetch(upload_url, {
+                      method: 'PUT',
+                      headers: { 'Content-Type': file.type },
+                      body: file,
+                    });
+        
+                    if (!uploadResponse.ok) {
+                      throw new Error('Gagal mengunggah gambar!');
+                    }
+        
+                    // Return the public URL for Editor.js to use
+                    return {
+                      success: 1,
+                      file: {
+                        url: public_url, // URL accessible by your application or users
+                      },
+                    };
+                  },
+                },
+              },
             },
           },
           data: JSON.parse(response.data.data.data),
