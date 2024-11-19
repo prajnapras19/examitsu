@@ -1,4 +1,62 @@
 services:
+  backend:
+    restart: always
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    ports:
+      - "80:8080"
+    depends_on:
+      - backend-mysql
+      - backend-redis
+    environment:
+      MYSQL_HOST: backend-mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: project-ultra
+      MYSQL_PASSWORD: CHANGEME
+      MYSQL_DATABASE: examitsu
+      REDIS_HOST: backend-redis
+      REDIS_PORT: 6379
+      GORM_LOG_LEVEL: 4
+      JWT_SIGNATURE_KEY: CHANGEME
+      SYSTEM_PASSWORD: CHANGEME
+      STORAGE_SERVICE_ACCOUNT_KEY_PATH: /etc/secret/gcs-service-account.json
+    networks:
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1G"
+        max-file: "3"
+    volumes:
+      - /path/to/host/dir:/etc/secret
+
+  backend-worker:
+    restart: always
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend-mysql
+      - backend-redis
+    environment:
+      ROLE: worker
+      MYSQL_HOST: backend-mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: examitsu
+      MYSQL_PASSWORD: CHANGEME
+      MYSQL_DATABASE: examitsu
+      REDIS_HOST: backend-redis
+      REDIS_PORT: 6379
+      GORM_LOG_LEVEL: 4
+    networks:
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1G"
+        max-file: "3"
+
   backend-redis:
     restart: always
     image: redis:7.0
@@ -6,10 +64,50 @@ services:
     networks:
       - backend
     ports:
-      - "6379:6379"
+      - "6379"
+    volumes:
+      - backend_redis_data:/data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1G"
+        max-file: "3"
+
+  backend-mysql:
+    restart: always
+    image: mysql:8.0
+    environment:
+      MYSQL_USER: examitsu
+      MYSQL_PASSWORD: CHANGEME
+      MYSQL_DATABASE: examitsu
+      MYSQL_RANDOM_ROOT_PASSWORD: 1
+    volumes:
+      - backend_mysql_data:/var/lib/mysql
+    networks:
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1G"
+        max-file: "3"
+
+  frontend:
+    restart: always
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_BACKEND_URL: http://host.docker.internal:8080
+    networks:
+      - frontend
+    ports:
+      - "80:3000"
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
 
 volumes:
-  redis-data:
+  backend_redis_data:
+  backend_mysql_data:
 
 networks:
   backend:
