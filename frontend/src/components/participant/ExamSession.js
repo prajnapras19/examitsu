@@ -176,30 +176,35 @@ const ExamSession = () => {
           },
         }
       );
-      
-      toast.success(`Jawaban untuk nomor ${currentQuestionNumber} berhasil disimpan!`, {
-        position: "top-center",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-    } catch (err) {
-      if (err.status < 500) {
-        navigate('/404');
-      } else {
-        toast.error(`Gagal menyimpan jawaban untuk nomor ${currentQuestionNumber}, silakan coba beberapa saat lagi.`, {
+      setTimeout(() => {
+        toast.success(`Jawaban untuk nomor ${currentQuestionNumber} berhasil disimpan!`, {
           position: "top-center",
-          autoClose: 5000,
+          autoClose: 3000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true,
         });
+      }, 1000);
+    } catch (err) {
+      if (err.status < 500) {
+        navigate('/404');
+      } else {
+        setTimeout(() => {
+          toast.error(`Gagal menyimpan jawaban untuk nomor ${currentQuestionNumber}, silakan coba beberapa saat lagi.`, {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        }, 1000);
       }
     } finally {
-      setDisableChooseOption(false);
+      setTimeout(() => {
+        setDisableChooseOption(false)
+      }, 1000);
     }
   }
 

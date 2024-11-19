@@ -62,7 +62,6 @@ const EditQuestionModal = (props) => {
         
                     const res = await getFileUploadURL.json();
                     const { upload_url, public_url } = res.data;
-                    console.log('res', res.data);
         
                     // Upload file to the signed URL
                     const uploadResponse = await fetch(upload_url, {
