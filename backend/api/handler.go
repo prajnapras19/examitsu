@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/adminauth"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/client/storage"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/exam"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/mcqoption"
@@ -24,6 +25,7 @@ type Handler interface {
 	StartExam(*gin.Context)
 
 	CreateQuestion(*gin.Context)
+	GetUploadQuestionBlobURL(*gin.Context)
 	GetQuestions(*gin.Context)
 	GetQuestionByID(*gin.Context)
 	UpdateQuestion(*gin.Context)
@@ -55,6 +57,7 @@ type handler struct {
 	mcqOptionService   mcqoption.Service
 	participantService participant.Service
 	submissionService  submission.Service
+	storageService     storage.Service
 }
 
 func NewHandler(
@@ -65,6 +68,7 @@ func NewHandler(
 	mcqOptionService mcqoption.Service,
 	participantService participant.Service,
 	submissionService submission.Service,
+	storageService storage.Service,
 ) Handler {
 	return &handler{
 		cfg:                cfg,
@@ -74,5 +78,6 @@ func NewHandler(
 		mcqOptionService:   mcqOptionService,
 		participantService: participantService,
 		submissionService:  submissionService,
+		storageService:     storageService,
 	}
 }

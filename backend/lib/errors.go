@@ -72,4 +72,7 @@ var (
 	ErrFailedToSaveAnswer = errors.New("failed to save answer")
 	ErrAnswerNotFound     = errors.New("answer not found")
 	ErrFailedToGetAnswer  = errors.New("failed to get answer")
+
+	// storage.service
+	ErrFailedToGetUploadURL = errors.New("failed to get upload url")
 )

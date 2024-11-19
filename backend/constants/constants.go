@@ -26,4 +26,6 @@ const (
 	ExamSessionSubmissionCacheObjectKeyPrefix = "ExamSessionSubmissionCacheObject"
 	UpdateAnswerQueueName                     = "updateAnswerQueue"
 	UpdateAnswerConsumerName                  = "updateAnswerConsumer"
+
+	DefaultRandomQuestionBlobFilenameLength = 64
 )

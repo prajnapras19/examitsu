@@ -10,6 +10,7 @@ import (
 	"github.com/prajnapras19/project-form-exam-sman2/backend/api"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/client/mysql"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/client/redis"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/client/storage"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/exam"
@@ -41,6 +42,7 @@ func initDefault(cfg *config.Config) {
 	if err != nil {
 		panic(err)
 	}
+	storageService := storage.NewService(cfg.StorageConfig)
 
 	// repositories
 	examRepository := exam.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient())
@@ -66,6 +68,7 @@ func initDefault(cfg *config.Config) {
 		mcqOptionService,
 		participantService,
 		submissionService,
+		storageService,
 	)
 
 	// routes
@@ -91,6 +94,7 @@ func initDefault(cfg *config.Config) {
 	adminGroup.DELETE("/exams/:serial", handler.DeleteExamBySerial)
 
 	adminGroup.PUT("/questions", handler.CreateQuestion)
+	adminGroup.POST("/questions/file-upload-url", handler.GetUploadQuestionBlobURL)
 	adminGroup.POST("/questions", handler.GetQuestions)
 	adminGroup.POST("/questions/:id", handler.GetQuestionByID)
 	adminGroup.PATCH("/questions/:id", handler.UpdateQuestion)

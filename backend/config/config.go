@@ -20,9 +20,10 @@ type Config struct {
 
 	UpdateAnswerQueuePrefetchLimit int64 `envconfig:"UPDATE_ANSWER_QUEUE_PREFETCH_LIMIT" default:"50"`
 
-	MySQLConfig MySQLConfig
-	AuthConfig  AuthConfig
-	RedisConfig RedisConfig
+	MySQLConfig   MySQLConfig
+	AuthConfig    AuthConfig
+	RedisConfig   RedisConfig
+	StorageConfig StorageConfig
 }
 
 type AuthConfig struct {
@@ -50,6 +51,12 @@ type RedisConfig struct {
 	Password string `envconfig:"REDIS_PASSWORD" default:""`
 	Port     string `envconfig:"REDIS_PORT" default:"6379"`
 	DB       int    `envconfig:"REDIS_DATABASE" default:"0"`
+}
+
+type StorageConfig struct {
+	ServiceAccountKeyPath   string        `envconfig:"STORAGE_SERVICE_ACCOUNT_KEY_PATH" default:""`
+	UploadURLExpiryDuration time.Duration `envconfig:"STORAGE_UPLOAD_URL_EXPIRY_DURATION" default:"24h"`
+	BucketName              string        `envconfig:"BUCKET_NAME" default:"examitsu"`
 }
 
 func Get() *Config {

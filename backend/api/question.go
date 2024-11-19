@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/client/storage"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/mcqoption"
@@ -48,6 +49,15 @@ type ExamSessionQuestionData struct {
 
 type SubmitAnswerRequest struct {
 	McqOptionID uint `json:"mcq_option_id" binding:"required"`
+}
+
+type GetUploadQuestionBlobURLRequest struct {
+	FileType string `json:"file_type" binding:"required"`
+}
+
+type GetUploadQuestionBlobURLResponse struct {
+	UploadURL string `json:"upload_url"`
+	PublicURL string `json:"public_url"`
 }
 
 /***
@@ -97,6 +107,42 @@ func (h *handler) CreateQuestion(c *gin.Context) {
 	}
 
 	res := h.MapQuestionEntityToQuestionData(svcRes)
+	c.JSON(http.StatusOK, lib.BaseResponse{
+		Message: constants.Success,
+		Data:    res,
+	})
+}
+
+func (h *handler) GetUploadQuestionBlobURL(c *gin.Context) {
+	var req GetUploadQuestionBlobURLRequest
+
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrFailedToParseRequest.Error(),
+		})
+		return
+	}
+
+	fileName, err := lib.GenerateRandomString(constants.DefaultRandomQuestionBlobFilenameLength)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrUnknownError.Error(),
+		})
+		return
+	}
+
+	svcRes, err := h.storageService.GetUploadURL(&storage.GetUploadURLRequest{
+		FileName: fileName,
+		FileType: req.FileType,
+	})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	res := h.MapGetUploadURLResponseEntityToGetUploadQuestionBlobURLResponse(svcRes)
 	c.JSON(http.StatusOK, lib.BaseResponse{
 		Message: constants.Success,
 		Data:    res,
@@ -586,4 +632,11 @@ func (h *handler) MapQuestionEntityListToQuestionDataIDOnlyList(svcRes []*questi
 		res = append(res, h.MapQuestionEntityToQuestionDataIDOnly(obj))
 	}
 	return res
+}
+
+func (h *handler) MapGetUploadURLResponseEntityToGetUploadQuestionBlobURLResponse(svcRes *storage.GetUploadURLResponse) *GetUploadQuestionBlobURLResponse {
+	return &GetUploadQuestionBlobURLResponse{
+		UploadURL: svcRes.UploadURL,
+		PublicURL: svcRes.PublicURL,
+	}
 }
