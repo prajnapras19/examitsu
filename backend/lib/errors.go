@@ -59,11 +59,12 @@ var (
 	ErrParticipantNotFound = errors.New("participant not found")
 
 	// participant.service
-	ErrFailedToCreateParticipants = errors.New("failed to create participants")
-	ErrFailedToGetParticipant     = errors.New("failed to get participant")
-	ErrFailedToGetParticipants    = errors.New("failed to get participants")
-	ErrFailedToUpdateParticipant  = errors.New("failed to update participant")
-	ErrFailedToDeleteParticipant  = errors.New("failed to delete participant")
+	ErrFailedToCreateParticipants        = errors.New("failed to create participants")
+	ErrFailedToGetParticipant            = errors.New("failed to get participant")
+	ErrFailedToGetParticipants           = errors.New("failed to get participants")
+	ErrFailedToUpdateParticipant         = errors.New("failed to update participant")
+	ErrFailedToDeleteParticipant         = errors.New("failed to delete participant")
+	ErrFailedToGetParticipantTotalPoints = errors.New("failed to get participant total points")
 
 	// submission.repository
 	ErrSubmissionNotFound = errors.New("failed to get submission")

@@ -19,6 +19,8 @@ type Service interface {
 	DeleteParticipantByID(id uint) error
 	GetParticipantByExamIDAndName(examID uint, name string) (*Participant, error)
 
+	GetParticipantTotalPointsByExamID(examID uint) ([]*ParticipantTotalPoint, error)
+
 	GenerateToken(examSerial string, participantID uint) string
 	VerifyToken(token *jwt.Token) (interface{}, error)
 	ValidateToken(tokenString string) (*lib.ExamTokenJWTClaims, error)
@@ -118,6 +120,15 @@ func (s *service) GetParticipantByExamIDAndName(examID uint, name string) (*Part
 			return nil, err
 		}
 		return nil, lib.ErrFailedToGetParticipant
+	}
+	return res, nil
+}
+
+func (s *service) GetParticipantTotalPointsByExamID(examID uint) ([]*ParticipantTotalPoint, error) {
+	res, err := s.participantRepository.GetParticipantTotalPointsByExamID(examID)
+	if err != nil {
+		log.Println("[participant][service][GetParticipantTotalPointsByExamID] failed to get participant total points:", err.Error())
+		return nil, lib.ErrFailedToGetParticipantTotalPoints
 	}
 	return res, nil
 }

@@ -26,11 +26,12 @@ type CreateParticipantsRequest struct {
 }
 
 type ParticipantData struct {
-	ID        uint       `json:"id"`
-	Name      string     `json:"name"`
-	Password  string     `json:"password"`
-	StartedAt *time.Time `json:"started_at"`
-	EndedAt   *time.Time `json:"ended_at"`
+	ID         uint       `json:"id"`
+	Name       string     `json:"name"`
+	Password   string     `json:"password"`
+	StartedAt  *time.Time `json:"started_at"`
+	EndedAt    *time.Time `json:"ended_at"`
+	TotalPoint int        `json:"total_point"`
 }
 
 type UpdateParticipantRequest struct {
@@ -119,7 +120,15 @@ func (h *handler) GetParticipantsByExamSerial(c *gin.Context) {
 		return
 	}
 
-	res := h.MapParticipantEntityListToParticipantDataList(svcRes)
+	totalPoints, err := h.participantService.GetParticipantTotalPointsByExamID(exam.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	res := h.MapGetParticipantsByExamSerialResponse(svcRes, totalPoints)
 	c.JSON(http.StatusOK, lib.BaseResponse{
 		Message: constants.Success,
 		Data:    res,
@@ -389,4 +398,16 @@ func (h *handler) MapUpdateParticipantRequestToParticipantEntity(req *UpdatePart
 		Name:     req.Name,
 		Password: req.Password,
 	}
+}
+
+func (h *handler) MapGetParticipantsByExamSerialResponse(svcRes []*participant.Participant, totalPoints []*participant.ParticipantTotalPoint) []*ParticipantData {
+	participantData := h.MapParticipantEntityListToParticipantDataList(svcRes)
+	totalPointsMap := map[uint]int{}
+	for i := range totalPoints {
+		totalPointsMap[totalPoints[i].ParticipantID] = totalPoints[i].TotalPoint
+	}
+	for i := range participantData {
+		participantData[i].TotalPoint = totalPointsMap[participantData[i].ID]
+	}
+	return participantData
 }

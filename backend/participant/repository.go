@@ -22,6 +22,8 @@ type Repository interface {
 	UpdateParticipant(participant *Participant) error
 	DeleteParticipantByID(id uint) error
 
+	GetParticipantTotalPointsByExamID(examID uint) ([]*ParticipantTotalPoint, error)
+
 	GetParticipantByIDCacheKey(id uint) string
 	GetParticipantByExamIDAndNameCacheKey(examID uint, name string) string
 }
@@ -139,6 +141,32 @@ func (r *repository) DeleteParticipantByID(id uint) error {
 		return lib.ErrParticipantNotFound
 	}
 	return nil
+}
+
+func (r *repository) GetParticipantTotalPointsByExamID(examID uint) ([]*ParticipantTotalPoint, error) {
+	var res []*ParticipantTotalPoint
+	err := r.db.Raw(`
+		SELECT
+		    p.id AS participant_id,
+		    COALESCE(SUM(m.point), 0) AS total_point
+		FROM
+		    participants p
+		LEFT JOIN
+		    submissions s
+		ON
+		    p.id = s.participant_id
+		LEFT JOIN
+		    mcq_options m
+		ON
+		    s.mcq_option_id = m.id
+		WHERE
+		    p.exam_id = ?
+		GROUP BY
+		    1
+		ORDER BY
+		    p.id ASC;
+	`, examID).Scan(&res).Error
+	return res, err
 }
 
 func (r *repository) GetParticipantByIDCacheKey(id uint) string {

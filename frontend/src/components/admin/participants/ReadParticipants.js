@@ -9,6 +9,7 @@ import DeleteConfirmationModal from '../../etc/DeleteConfirmationModal';
 import ReadExamsMenuCard from '../exam/ReadExamsMenuCard';
 import AddParticipantsCard from './AddParticipantsCard';
 import ReadQuestionCard from '../question/ReadQuestionCard';
+import { formatIndonesianTimestamp } from '../../../utils/converter';
 
 const ReadParticipants = (props) => {
   const { auth } = props;
@@ -174,6 +175,9 @@ const ReadParticipants = (props) => {
               <th>#</th>
               <th>Nama</th>
               <th>Kata Sandi</th>
+              <th>Waktu Mulai</th>
+              <th>Waktu Selesai</th>
+              <th>Total Poin</th>
               <th colSpan="3">Aksi</th>
             </tr>
           </thead>
@@ -183,8 +187,29 @@ const ReadParticipants = (props) => {
                 <td className="p-3">{i+1}</td>
                 <td className="p-3">{participant.name}</td>
                 <td className="p-3">{participant.password}</td>
+                <td className="p-3">{
+                  participant.started_at
+                  ? (
+                    <span>{formatIndonesianTimestamp(participant.started_at)}</span>
+                  )
+                  : (
+                    <span>-</span>
+                  )
+                }</td>
+                <td className="p-3">{
+                  participant.ended_at
+                  ? (
+                    <span>{formatIndonesianTimestamp(participant.ended_at)}</span>
+                  )
+                  : (
+                    <span>-</span>
+                  )
+                }</td>
                 <td>
-                <Button variant="primary" className="me-3" onClick={() => navigate(`/admin/exams/${exam.serial}/participants/${participant.id}/edit`)}>Ubah</Button>
+                  {participant.total_point}
+                </td>
+                <td>
+                  <Button variant="primary" className="me-3" onClick={() => navigate(`/admin/exams/${exam.serial}/participants/${participant.id}/edit`)}>Ubah</Button>
                 </td>
                 <td>
                   <Button variant="danger" onClick={() => handleShowDeleteModal(participant.id)}>Hapus</Button>

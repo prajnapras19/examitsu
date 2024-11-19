@@ -14,3 +14,8 @@ type Participant struct {
 	StartedAt *time.Time
 	EndedAt   *time.Time
 }
+
+type ParticipantTotalPoint struct {
+	ParticipantID uint
+	TotalPoint    int
+}
