@@ -19,6 +19,7 @@ const ExamSession = () => {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const edjsParser = EditorJsHTML();
   const [disableChooseOption, setDisableChooseOption] = useState(false);
+  const [disableChangeQuestion, setDisableChangeQuestion] = useState(false);
 
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -145,6 +146,10 @@ const ExamSession = () => {
   }
 
   const handleChooseQuestion = (i) => {
+    setDisableChangeQuestion(true);
+    setTimeout(() => {
+      setDisableChangeQuestion(false);
+    }, 1000);
     setCurrentQuestionNumber(i);
   }
 
@@ -204,7 +209,7 @@ const ExamSession = () => {
     } finally {
       setTimeout(() => {
         setDisableChooseOption(false)
-      }, 1000);
+      }, 500);
     }
   }
 
@@ -216,6 +221,7 @@ const ExamSession = () => {
             questionIDList={questionIDList}
             handleChooseQuestion={handleChooseQuestion}
             handleShowSubmitModal={handleShowSubmitModal}
+            disabled={disableChangeQuestion}
           />
         </Container>
       <hr/>
@@ -270,16 +276,16 @@ const ExamSession = () => {
           <Container className="mt-5">
               <Button
                 variant="primary"
-                onClick={() => setCurrentQuestionNumber(currentQuestionNumber - 1)}
-                disabled={currentQuestionNumber === 1}
+                onClick={() => handleChooseQuestion(currentQuestionNumber - 1)}
+                disabled={currentQuestionNumber === 1 || disableChangeQuestion}
                 className='me-3'
               >
                 &lt;&lt; Soal sebelumnya
               </Button>
               <Button
                 variant="primary"
-                onClick={() => setCurrentQuestionNumber(currentQuestionNumber + 1)}
-                disabled={currentQuestionNumber === questionIDList.length}
+                onClick={() => handleChooseQuestion(currentQuestionNumber + 1)}
+                disabled={currentQuestionNumber === questionIDList.length || disableChangeQuestion}
               >
                 Soal selanjutnya &gt;&gt;
               </Button>

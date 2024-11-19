@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button, Container, Offcanvas } from "react-bootstrap";
 
 const QuestionListSidebar = (props) => {
-  const { questionIDList, handleChooseQuestion, handleShowSubmitModal } = props;
+  const { questionIDList, handleChooseQuestion, handleShowSubmitModal, disabled } = props;
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
@@ -10,7 +10,7 @@ const QuestionListSidebar = (props) => {
 
   return (
     <>
-      <Button variant="primary" onClick={handleShow} className="me-3">
+      <Button variant="primary" onClick={handleShow} className="me-3" disabled={disabled}>
         Klik di sini untuk melihat daftar soal
       </Button>
       <Offcanvas show={show} onHide={handleClose} {...props}>
