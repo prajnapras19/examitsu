@@ -6,6 +6,7 @@ import { Form, Container, Spinner, Button } from 'react-bootstrap';
 import BackToHomepageCard from '../home/BackToHomepageCard';
 import ReadExamsMenuCard from '../exam/ReadExamsMenuCard';
 import ReadParticipantsOfThisExamMenuCard from './ReadParticipantsOfThisExamMenuCard';
+import ReadQuestionCard from '../question/ReadQuestionCard';
 
 const AddParticipants = (props) => {
   const { auth } = props;
@@ -16,7 +17,7 @@ const AddParticipants = (props) => {
   const fields = [
     {
       label: 'Nama-nama Peserta',
-      placeholder: 'Masukkan Nama-nama Peserta',
+      placeholder: 'Nama Peserta 1\nNama Peserta 2\nNama Peserta 3\n...',
       name: 'names',
       type: 'textarea',
       rows: 8,
@@ -25,7 +26,7 @@ const AddParticipants = (props) => {
     },
     {
       label: 'Kata Sandi (jika dibiarkan kosong, maka kata sandi akan dibuat oleh sistem)',
-      placeholder: 'Masukkan Kata Sandi',
+      placeholder: 'Kata sandi yang sama untuk semua peserta di atas',
       name: 'password',
       type: 'text',
       required: false,
@@ -113,6 +114,7 @@ const AddParticipants = (props) => {
         <Container className="card-grid">
           <BackToHomepageCard></BackToHomepageCard>
           <ReadExamsMenuCard></ReadExamsMenuCard>
+          <ReadQuestionCard></ReadQuestionCard>
           <ReadParticipantsOfThisExamMenuCard></ReadParticipantsOfThisExamMenuCard>
         </Container>
       </Container>

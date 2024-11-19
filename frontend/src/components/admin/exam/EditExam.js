@@ -6,6 +6,8 @@ import { toast } from 'react-toastify';
 import { Form, Container, Spinner, Button } from 'react-bootstrap';
 import ReadExamsMenuCard from './ReadExamsMenuCard';
 import BackToHomepageCard from '../home/BackToHomepageCard';
+import ReadParticipantsOfThisExamMenuCard from '../participants/ReadParticipantsOfThisExamMenuCard';
+import ReadQuestionCard from '../question/ReadQuestionCard';
 
 const EditExam = (props) => {
   const { auth } = props;
@@ -145,6 +147,8 @@ const EditExam = (props) => {
         <Container className="card-grid">
           <BackToHomepageCard></BackToHomepageCard>
           <ReadExamsMenuCard></ReadExamsMenuCard>
+          <ReadQuestionCard></ReadQuestionCard>
+          <ReadParticipantsOfThisExamMenuCard></ReadParticipantsOfThisExamMenuCard>
         </Container>
       </Container>
       <hr/>

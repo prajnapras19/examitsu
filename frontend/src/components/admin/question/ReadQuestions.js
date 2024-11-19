@@ -9,6 +9,7 @@ import AddQuestionCard from './AddQuestionCard';
 import DeleteConfirmationModal from '../../etc/DeleteConfirmationModal';
 import ReadExamsMenuCard from '../exam/ReadExamsMenuCard';
 import EditQuestionModal from './EditQuestionModal';
+import ReadParticipantsOfThisExamMenuCard from '../participants/ReadParticipantsOfThisExamMenuCard';
 
 const ReadQuestions = (props) => {
   const { auth } = props;
@@ -167,6 +168,7 @@ const ReadQuestions = (props) => {
             auth={auth}
             initiateTriggerRender={initiateTriggerRender}
           ></AddQuestionCard>
+          <ReadParticipantsOfThisExamMenuCard></ReadParticipantsOfThisExamMenuCard>
         </Container>
       </Container>
       <hr/>

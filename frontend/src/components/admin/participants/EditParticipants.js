@@ -7,6 +7,7 @@ import { Form, Container, Spinner, Button } from 'react-bootstrap';
 import ReadExamsMenuCard from '../exam/ReadExamsMenuCard';
 import BackToHomepageCard from '../home/BackToHomepageCard';
 import ReadParticipantsOfThisExamMenuCard from './ReadParticipantsOfThisExamMenuCard';
+import ReadQuestionCard from '../question/ReadQuestionCard';
 
 const EditParticipant = (props) => {
   const { auth } = props;
@@ -145,6 +146,7 @@ const EditParticipant = (props) => {
         <Container className="card-grid">
           <BackToHomepageCard></BackToHomepageCard>
           <ReadExamsMenuCard></ReadExamsMenuCard>
+          <ReadQuestionCard></ReadQuestionCard>
           <ReadParticipantsOfThisExamMenuCard></ReadParticipantsOfThisExamMenuCard>
         </Container>
       </Container>

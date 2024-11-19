@@ -8,6 +8,7 @@ import BackToHomepageCard from '../home/BackToHomepageCard';
 import DeleteConfirmationModal from '../../etc/DeleteConfirmationModal';
 import ReadExamsMenuCard from '../exam/ReadExamsMenuCard';
 import AddParticipantsCard from './AddParticipantsCard';
+import ReadQuestionCard from '../question/ReadQuestionCard';
 
 const ReadParticipants = (props) => {
   const { auth } = props;
@@ -130,6 +131,7 @@ const ReadParticipants = (props) => {
         <Container className="card-grid">
           <BackToHomepageCard></BackToHomepageCard>
           <ReadExamsMenuCard></ReadExamsMenuCard>
+          <ReadQuestionCard></ReadQuestionCard>
           <AddParticipantsCard></AddParticipantsCard>
         </Container>
       </Container>
@@ -143,6 +145,7 @@ const ReadParticipants = (props) => {
               <th>Serial</th>
               <th>Nama</th>
               <th>Sudah / Masih Bisa Dikerjakan?</th>
+              <th>Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -150,6 +153,9 @@ const ReadParticipants = (props) => {
               <td>{exam.serial}</td>
               <td>{exam.name}</td>
               <td>{exam.is_open ? "Ya" : "Tidak"}</td>
+              <td>
+                <Button variant="primary" className="me-3" onClick={() => navigate(`/admin/exams/${exam.serial}/edit`)}>Ubah</Button>
+              </td>
             </tr>
           </tbody>
         </Table>
