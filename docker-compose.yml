@@ -6,23 +6,18 @@ services:
       dockerfile: Dockerfile
     ports:
       - "80:8080"
-    depends_on:
-      - backend-mysql
-      - backend-redis
     environment:
-      MYSQL_HOST: backend-mysql
+      MYSQL_HOST: CHANGEME
       MYSQL_PORT: 3306
-      MYSQL_USER: project-ultra
+      MYSQL_USER: examitsu
       MYSQL_PASSWORD: CHANGEME
       MYSQL_DATABASE: examitsu
-      REDIS_HOST: backend-redis
+      REDIS_HOST: CHANGEME
       REDIS_PORT: 6379
       GORM_LOG_LEVEL: 4
       JWT_SIGNATURE_KEY: CHANGEME
       SYSTEM_PASSWORD: CHANGEME
       STORAGE_SERVICE_ACCOUNT_KEY_PATH: /etc/secret/gcs-service-account.json
-    networks:
-      - backend
     logging:
       driver: "json-file"
       options:
@@ -50,7 +45,7 @@ services:
       REDIS_PORT: 6379
       GORM_LOG_LEVEL: 4
     networks:
-      - backend
+      - private
     logging:
       driver: "json-file"
       options:
@@ -62,7 +57,7 @@ services:
     image: redis:7.0
     command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
     networks:
-      - backend
+      - private
     ports:
       - "6379"
     volumes:
@@ -80,11 +75,11 @@ services:
       MYSQL_USER: examitsu
       MYSQL_PASSWORD: CHANGEME
       MYSQL_DATABASE: examitsu
-      MYSQL_RANDOM_ROOT_PASSWORD: 1
+      MYSQL_RANDOM_ROOT_PASSWORD: true
     volumes:
       - backend_mysql_data:/var/lib/mysql
     networks:
-      - backend
+      - private
     logging:
       driver: "json-file"
       options:
@@ -98,8 +93,6 @@ services:
       dockerfile: Dockerfile
       args:
         REACT_APP_BACKEND_URL: http://host.docker.internal:8080
-    networks:
-      - frontend
     ports:
       - "80:3000"
     extra_hosts:
@@ -110,5 +103,4 @@ volumes:
   backend_mysql_data:
 
 networks:
-  backend:
-  frontend:
+  private:
