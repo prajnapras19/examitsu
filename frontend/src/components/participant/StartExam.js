@@ -59,7 +59,7 @@ const StartExam = () => {
     } catch (error) {
       console.error(error);
       if (error.status === 400) {
-        toast.error(`Peserta sudah mengumpulkan ujian.`, {
+        toast.error(`Peserta sudah mengerjakan ujian.`, {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: false,

@@ -10,6 +10,7 @@ var (
 
 	// handler.participant
 	ErrExamAlreadySubmitted = errors.New("exam already submitted")
+	ErrExamAlreadyStarted   = errors.New("exam already started")
 	ErrExamNotStarted       = errors.New("exam not started")
 
 	// lib.jwt_claims

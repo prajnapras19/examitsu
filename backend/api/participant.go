@@ -259,17 +259,21 @@ func (h *handler) StartExam(c *gin.Context) {
 		return
 	}
 
-	// if exam is not yet started
-	if participant.StartedAt == nil {
-		currentTime := time.Now()
-		participant.StartedAt = &currentTime
-		err = h.participantService.UpdateParticipant(participant)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, lib.BaseResponse{
-				Message: err.Error(),
-			})
-			return
-		}
+	if participant.StartedAt != nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrExamAlreadyStarted.Error(),
+		})
+		return
+	}
+
+	currentTime := time.Now()
+	participant.StartedAt = &currentTime
+	err = h.participantService.UpdateParticipant(participant)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
 	}
 
 	// generate exam token
