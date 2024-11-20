@@ -124,6 +124,18 @@ const ReadParticipants = (props) => {
     navigate('/500');
   }
 
+  const copyExamLinkToClipboard = (examSerial) => {
+    navigator.clipboard.writeText(`${process.env.REACT_APP_HOST_BASE_URL}/exam/${examSerial}`);
+    toast.success('Link ujian berhasil disalin!', {
+      position: "top-center",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  }
+
   return (
     <Container>
       <h1 className="my-4">Daftar Peserta</h1>
@@ -146,7 +158,7 @@ const ReadParticipants = (props) => {
               <th>Serial</th>
               <th>Nama</th>
               <th>Sudah / Masih Bisa Dikerjakan?</th>
-              <th>Aksi</th>
+              <th colSpan={2}>Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -156,6 +168,9 @@ const ReadParticipants = (props) => {
               <td>{exam.is_open ? "Ya" : "Tidak"}</td>
               <td>
                 <Button variant="primary" className="me-3" onClick={() => navigate(`/admin/exams/${exam.serial}/edit`)}>Ubah</Button>
+              </td>
+              <td>
+                <Button variant="primary" className="me-3" onClick={() => copyExamLinkToClipboard(exam.serial)}>Salin Link Ujian</Button>
               </td>
             </tr>
           </tbody>
