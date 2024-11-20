@@ -6,9 +6,11 @@ WORKDIR /app
 
 # Accept build args
 ARG REACT_APP_BACKEND_URL
+ARG REACT_APP_HOST_BASE_URL
 
 # Add the build arg to the environment
 ENV REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL
+ENV REACT_APP_HOST_BASE_URL
 
 # Copy package.json and package-lock.json to install dependencies
 COPY package.json package-lock.json ./
