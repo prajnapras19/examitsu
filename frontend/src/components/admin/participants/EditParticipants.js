@@ -37,7 +37,7 @@ const EditParticipant = (props) => {
   // a copy of the fields default value
   const defaultValueMap = {
     name: '',
-    is_open: false,
+    password: '',
   }
 
   const [formData, setFormData] = useState(
