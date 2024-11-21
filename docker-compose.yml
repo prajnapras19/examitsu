@@ -5,18 +5,18 @@ services:
       context: backend
       dockerfile: Dockerfile
     ports:
-      - "80:8080"
+      - "8080:8080"
     environment:
-      MYSQL_HOST: CHANGEME
+      MYSQL_HOST: REDACTED
       MYSQL_PORT: 3306
       MYSQL_USER: examitsu
-      MYSQL_PASSWORD: CHANGEME
+      MYSQL_PASSWORD: REDACTED
       MYSQL_DATABASE: examitsu
-      REDIS_HOST: CHANGEME
+      REDIS_HOST: REDACTED
       REDIS_PORT: 6379
       GORM_LOG_LEVEL: 4
-      JWT_SIGNATURE_KEY: CHANGEME
-      SYSTEM_PASSWORD: CHANGEME
+      JWT_SIGNATURE_KEY: REDACTED
+      SYSTEM_PASSWORD: REDACTED
       STORAGE_SERVICE_ACCOUNT_KEY_PATH: /etc/secret/gcs-service-account.json
     logging:
       driver: "json-file"
@@ -24,7 +24,7 @@ services:
         max-size: "1G"
         max-file: "3"
     volumes:
-      - /path/to/host/dir:/etc/secret
+      - /REDACTED/secret:/etc/secret
 
   backend-worker:
     restart: always
@@ -38,14 +38,14 @@ services:
       ROLE: worker
       MYSQL_HOST: backend-mysql
       MYSQL_PORT: 3306
-      MYSQL_USER: examitsu
-      MYSQL_PASSWORD: CHANGEME
       MYSQL_DATABASE: examitsu
       REDIS_HOST: backend-redis
       REDIS_PORT: 6379
       GORM_LOG_LEVEL: 4
     networks:
       - private
+    ports:
+      - 3306:3306
     logging:
       driver: "json-file"
       options:
@@ -59,7 +59,7 @@ services:
     networks:
       - private
     ports:
-      - "6379"
+      - 6379:6379
     volumes:
       - backend_redis_data:/data
     logging:
@@ -73,7 +73,7 @@ services:
     image: mysql:8.0
     environment:
       MYSQL_USER: examitsu
-      MYSQL_PASSWORD: CHANGEME
+      MYSQL_PASSWORD: REDACTED
       MYSQL_DATABASE: examitsu
       MYSQL_RANDOM_ROOT_PASSWORD: true
     volumes:
@@ -92,11 +92,10 @@ services:
       context: frontend
       dockerfile: Dockerfile
       args:
-        REACT_APP_BACKEND_URL: http://host.docker.internal:8080
+        REACT_APP_BACKEND_URL: https://examitsu.net
+        REACT_APP_HOST_BASE_URL: https://examitsu.net
     ports:
-      - "80:3000"
-    extra_hosts:
-      - "host.docker.internal:172.17.0.1"
+      - "3000:3000"
 
 volumes:
   backend_redis_data:
