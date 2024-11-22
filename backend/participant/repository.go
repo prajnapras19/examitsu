@@ -53,7 +53,7 @@ func (r *repository) CreateParticipants(participants []*Participant) ([]*Partici
 
 func (r *repository) GetParticipantsByExamID(examID uint) ([]*Participant, error) {
 	var res []*Participant
-	err := r.db.Where("exam_id = ?", examID).Find(&res).Error
+	err := r.db.Where("exam_id = ?", examID).Order("id ASC").Find(&res).Error
 	return res, err
 }
 
@@ -161,6 +161,9 @@ func (r *repository) GetParticipantTotalPointsByExamID(examID uint) ([]*Particip
 		    s.mcq_option_id = m.id
 		WHERE
 		    p.exam_id = ?
+			AND p.deleted_at IS NULL
+			AND s.deleted_at IS NULL
+			AND m.deleted_at IS NULL
 		GROUP BY
 		    1
 		ORDER BY
