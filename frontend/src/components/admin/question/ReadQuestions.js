@@ -107,7 +107,7 @@ const ReadQuestions = (props) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/questions?page=${currentPage}`,
+        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/questions?page=${currentPage}&page_size=100`,
           {
             exam_serial_equals_to: {
                 value: examSerial,
