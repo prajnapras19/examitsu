@@ -10,9 +10,10 @@ import (
 
 type Exam struct {
 	lib.BaseModel
-	Serial string
-	Name   string
-	IsOpen bool
+	Serial                 string
+	Name                   string
+	IsOpen                 bool
+	AllowedDurationMinutes uint
 }
 
 type GetExamsFilter struct {
@@ -32,9 +33,10 @@ func (f *GetExamsFilter) Scope() []func(db *gorm.DB) *gorm.DB {
 // copy of participant.Participant
 type Participant struct {
 	lib.BaseModel
-	ExamID    uint
-	Name      string
-	Password  string
-	StartedAt *time.Time
-	EndedAt   *time.Time
+	ExamID                 uint
+	Name                   string
+	Password               string // not used anymore, but not dropped for backward compatibility with v.0.0
+	AllowedDurationMinutes uint
+	StartedAt              *time.Time
+	EndedAt                *time.Time
 }

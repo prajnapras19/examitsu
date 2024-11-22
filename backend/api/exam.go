@@ -16,20 +16,23 @@ import (
 ***/
 
 type CreateExamRequest struct {
-	Name   string `json:"name" binding:"required"`
-	IsOpen bool   `json:"is_open"`
+	Name                   string `json:"name" binding:"required"`
+	IsOpen                 bool   `json:"is_open"`
+	AllowedDurationMinutes uint   `json:"allowed_duration_minutes"`
 }
 
 type ExamData struct {
-	Serial string `json:"serial"`
-	Name   string `json:"name"`
-	IsOpen bool   `json:"is_open"`
+	Serial                 string `json:"serial"`
+	Name                   string `json:"name"`
+	IsOpen                 bool   `json:"is_open"`
+	AllowedDurationMinutes uint   `json:"allowed_duration_minutes"`
 }
 
 type UpdateExamRequest struct {
-	Serial string `json:"-"`
-	Name   string `json:"name" binding:"required"`
-	IsOpen bool   `json:"is_open"`
+	Serial                 string `json:"-"`
+	Name                   string `json:"name" binding:"required"`
+	IsOpen                 bool   `json:"is_open"`
+	AllowedDurationMinutes uint   `json:"allowed_duration_minutes"`
 }
 
 /***
@@ -197,16 +200,18 @@ func (h *handler) GetOpenedExam(c *gin.Context) {
 
 func (h *handler) MapCreateExamRequestToExamEntity(req *CreateExamRequest) *exam.Exam {
 	return &exam.Exam{
-		Name:   req.Name,
-		IsOpen: req.IsOpen,
+		Name:                   req.Name,
+		IsOpen:                 req.IsOpen,
+		AllowedDurationMinutes: req.AllowedDurationMinutes,
 	}
 }
 
 func (h *handler) MapExamEntityToExamData(svcRes *exam.Exam) *ExamData {
 	return &ExamData{
-		Serial: svcRes.Serial,
-		Name:   svcRes.Name,
-		IsOpen: svcRes.IsOpen,
+		Serial:                 svcRes.Serial,
+		Name:                   svcRes.Name,
+		IsOpen:                 svcRes.IsOpen,
+		AllowedDurationMinutes: svcRes.AllowedDurationMinutes,
 	}
 }
 
@@ -220,8 +225,9 @@ func (h *handler) MapExamEntityListToExamDataList(svcRes []*exam.Exam) []*ExamDa
 
 func (h *handler) MapUpdateExamRequestToExamEntity(req *UpdateExamRequest) *exam.Exam {
 	return &exam.Exam{
-		Serial: req.Serial,
-		Name:   req.Name,
-		IsOpen: req.IsOpen,
+		Serial:                 req.Serial,
+		Name:                   req.Name,
+		IsOpen:                 req.IsOpen,
+		AllowedDurationMinutes: req.AllowedDurationMinutes,
 	}
 }

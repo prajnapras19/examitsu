@@ -25,6 +25,15 @@ const EditParticipant = (props) => {
       required: true,
       defaultValue: ''
     },
+    {
+      label: 'Durasi Maksimal Pengerjaan yang Diperbolehkan Ini (dalam satuan menit)',
+      name: 'allowed_duration_minutes',
+      placeholder: 'Masukkan durasi pengerjaan yang diperbolehkan untuk peserta ini',
+      type: 'float',
+      minValue: 1,
+      defaultValue: 120,
+      step: 1,
+    },
   ]
 
   // a copy of the fields default value
@@ -43,7 +52,14 @@ const EditParticipant = (props) => {
       setFormData({ ...formData, [name]: checked });
     } else {
       const { value } = e.target;
-      setFormData({ ...formData, [name]: value });
+      if (name === 'allowed_duration_minutes' && value === '') {
+        return;
+      }
+      if (name === 'allowed_duration_minutes') {
+        setFormData({ ...formData, [name]: Number(value) });
+      } else {
+        setFormData({ ...formData, [name]: value });
+      }
     }
   };
 

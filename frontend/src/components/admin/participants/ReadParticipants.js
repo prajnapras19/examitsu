@@ -189,8 +189,9 @@ const ReadParticipants = (props) => {
             <tr>
               <th>#</th>
               <th>Kode Peserta</th>
+              <th>Durasi Maksimal (menit)</th>
               <th>Waktu Mulai</th>
-              <th>Waktu Selesai</th>
+              <th>Waktu Pengumpulan</th>
               <th>Total Poin</th>
               <th colSpan="3">Aksi</th>
             </tr>
@@ -200,6 +201,7 @@ const ReadParticipants = (props) => {
               <tr key={participant.id}>
                 <td className="p-3">{i+1}</td>
                 <td className="p-3">{participant.name}</td>
+                <td className="p-3">{participant.allowed_duration_minutes}</td>
                 <td className="p-3">{
                   participant.started_at
                   ? (

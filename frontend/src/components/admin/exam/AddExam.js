@@ -24,6 +24,14 @@ const AddExam = (props) => {
       type: 'boolean',
       defaultValue: false,
     },
+    {
+      label: 'Durasi Pengerjaan (dalam satuan menit, durasi ini dapat diubah untuk setiap peserta jika dibutuhkan)',
+      name: 'allowed_duration_minutes',
+      type: 'float',
+      minValue: 1,
+      defaultValue: 120,
+      step: 1,
+    },
   ]
 
   const [formData, setFormData] = useState(
@@ -37,7 +45,14 @@ const AddExam = (props) => {
       setFormData({ ...formData, [name]: checked });
     } else {
       const { value } = e.target;
-      setFormData({ ...formData, [name]: value });
+      if (name === 'allowed_duration_minutes' && value === '') {
+        return;
+      }
+      if (name === 'allowed_duration_minutes') {
+        setFormData({ ...formData, [name]: Number(value) });
+      } else {
+        setFormData({ ...formData, [name]: value });
+      }
     }
   };
 

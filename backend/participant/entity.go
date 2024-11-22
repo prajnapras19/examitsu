@@ -8,11 +8,12 @@ import (
 
 type Participant struct {
 	lib.BaseModel
-	ExamID    uint
-	Name      string
-	Password  string // not used anymore, but not dropped for backward compatibility with v.0.0
-	StartedAt *time.Time
-	EndedAt   *time.Time
+	ExamID                 uint
+	Name                   string
+	Password               string // not used anymore, but not dropped for backward compatibility with v.0.0
+	AllowedDurationMinutes uint
+	StartedAt              *time.Time
+	EndedAt                *time.Time
 }
 
 type ParticipantTotalPoint struct {

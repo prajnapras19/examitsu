@@ -148,6 +148,7 @@ const ReadExams = (props) => {
             <tr>
               <th>Serial</th>
               <th>Nama</th>
+              <th>Durasi Pengerjaan (menit)</th>
               <th>Sudah / Masih Bisa Dikerjakan?</th>
               <th colSpan="5">Aksi</th>
             </tr>
@@ -157,6 +158,7 @@ const ReadExams = (props) => {
               <tr key={exam.serial}>
                 <td className="p-3">{exam.serial}</td>
                 <td className="p-3">{exam.name}</td>
+                <td className="p-3">{exam.allowed_duration_minutes}</td>
                 <td className="p-3">{exam.is_open ? "Ya" : "Tidak"}</td>
                 <td>
                   <Button variant="primary" className="me-3" onClick={() => navigate(`/admin/exams/${exam.serial}/edit`)}>Ubah</Button>

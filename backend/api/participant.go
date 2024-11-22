@@ -19,22 +19,25 @@ import (
 ***/
 
 type CreateParticipantsRequest struct {
-	ExamSerial string   `json:"exam_serial" binding:"required"`
-	ExamID     uint     `json:"-"`
-	Names      []string `json:"names" binding:"required"`
+	ExamSerial             string   `json:"exam_serial" binding:"required"`
+	ExamID                 uint     `json:"-"`
+	Names                  []string `json:"names" binding:"required"`
+	AllowedDurationMinutes uint     `json:"allowed_duration_minutes" binding:"required"`
 }
 
 type ParticipantData struct {
-	ID         uint       `json:"id"`
-	Name       string     `json:"name"`
-	StartedAt  *time.Time `json:"started_at"`
-	EndedAt    *time.Time `json:"ended_at"`
-	TotalPoint int        `json:"total_point"`
+	ID                     uint       `json:"id"`
+	Name                   string     `json:"name"`
+	StartedAt              *time.Time `json:"started_at"`
+	EndedAt                *time.Time `json:"ended_at"`
+	AllowedDurationMinutes uint       `json:"allowed_duration_minutes"`
+	TotalPoint             int        `json:"total_point"`
 }
 
 type UpdateParticipantRequest struct {
-	ID   uint   `json:"-"`
-	Name string `json:"name" binding:"required"`
+	ID                     uint   `json:"-"`
+	Name                   string `json:"name" binding:"required"`
+	AllowedDurationMinutes uint   `json:"allowed_duration_minutes" binding:"required"`
 }
 
 type StartExamRequest struct {
@@ -355,8 +358,9 @@ func (h *handler) MapCreateParticipantsRequestToParticipantEntityList(req *Creat
 	res := []*participant.Participant{}
 	for _, name := range req.Names {
 		res = append(res, &participant.Participant{
-			ExamID: req.ExamID,
-			Name:   name,
+			ExamID:                 req.ExamID,
+			Name:                   name,
+			AllowedDurationMinutes: req.AllowedDurationMinutes,
 		})
 	}
 	return res
@@ -364,10 +368,11 @@ func (h *handler) MapCreateParticipantsRequestToParticipantEntityList(req *Creat
 
 func (h *handler) MapParticipantEntityToParticipantData(svcRes *participant.Participant) *ParticipantData {
 	return &ParticipantData{
-		ID:        svcRes.ID,
-		Name:      svcRes.Name,
-		StartedAt: svcRes.StartedAt,
-		EndedAt:   svcRes.EndedAt,
+		ID:                     svcRes.ID,
+		Name:                   svcRes.Name,
+		StartedAt:              svcRes.StartedAt,
+		EndedAt:                svcRes.EndedAt,
+		AllowedDurationMinutes: svcRes.AllowedDurationMinutes,
 	}
 }
 
@@ -386,7 +391,8 @@ func (h *handler) MapUpdateParticipantRequestToParticipantEntity(req *UpdatePart
 				ID: req.ID,
 			},
 		},
-		Name: req.Name,
+		Name:                   req.Name,
+		AllowedDurationMinutes: req.AllowedDurationMinutes,
 	}
 }
 

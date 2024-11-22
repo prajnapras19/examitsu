@@ -12,8 +12,8 @@ const AddParticipants = (props) => {
   const { auth } = props;
   const navigate = useNavigate();
   const { examSerial } = useParams();
-  const [disableSubmitButton, setDisableSubmitButton] = useState(false);
-
+  const [error, setError] = useState(null);
+  const [exam, setExam] = useState({});
   const fields = [
     {
       label: 'Kode-kode Peserta (harus unik di dalam ujian ini, pisahkan di setiap baris)',
@@ -23,6 +23,15 @@ const AddParticipants = (props) => {
       rows: 8,
       required: true,
       defaultValue: '',
+    },
+    {
+      label: 'Durasi Maksimal Pengerjaan yang Diperbolehkan untuk Setiap Peserta di Atas (dalam satuan menit)',
+      name: 'allowed_duration_minutes',
+      placeholder: 'Masukkan durasi pengerjaan yang diperbolehkan untuk setiap peserta di atas',
+      type: 'float',
+      minValue: 1,
+      defaultValue: 0,
+      step: 1,
     },
   ]
 
@@ -37,7 +46,14 @@ const AddParticipants = (props) => {
       setFormData({ ...formData, [name]: checked });
     } else {
       const { value } = e.target;
-      setFormData({ ...formData, [name]: value });
+      if (name === 'allowed_duration_minutes' && value === '') {
+        return;
+      }
+      if (name === 'allowed_duration_minutes') {
+        setFormData({ ...formData, [name]: Number(value) });
+      } else {
+        setFormData({ ...formData, [name]: value });
+      }
     }
   };
 
@@ -48,6 +64,25 @@ const AddParticipants = (props) => {
     if (!auth.isLoggedIn) {
       navigate('/admin/login');
     }
+    const fetchExam = async() => {
+      try {
+        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/exams/${examSerial}`,
+          {}, {
+            headers: {
+              Authorization: `Bearer ${auth.token}`,
+            },
+          },
+        );
+
+        setExam(response.data.data);
+        setFormData({...formData, ['allowed_duration_minutes']: response.data.data.allowed_duration_minutes});
+      } catch (err) {
+        console.error("Error fetching exam", err);
+        setError(err);
+      }
+    }
+    
+    fetchExam();
   }, [auth.loading, auth.isLoggedIn]);
 
   if (auth.loading) {
@@ -59,15 +94,18 @@ const AddParticipants = (props) => {
     );
   }
 
+  if (error) {
+    navigate('/500');
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const customObject = {
       exam_serial: examSerial,
       names: formData.names.split('\n'),
+      allowed_duration_minutes: formData.allowed_duration_minutes,
     };
-
-    console.log('customObject', customObject);
 
     try {
       await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/participants`, customObject, {

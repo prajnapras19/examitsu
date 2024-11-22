@@ -119,6 +119,13 @@ func (r *repository) UpdateExam(exam *Exam) error {
 			return err
 		}
 
+		if err := tx.Model(&Exam{}).
+			Where("serial = ?", exam.Serial).
+			Update("allowed_duration_minutes", exam.AllowedDurationMinutes).
+			Error; err != nil {
+			return err
+		}
+
 		var hangingParticipants []*Participant
 		err := r.db.Where("started_at IS NOT NULL AND ended_at IS NULL").Find(&hangingParticipants).Error
 		if err != nil {
