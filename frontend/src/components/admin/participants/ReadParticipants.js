@@ -188,8 +188,7 @@ const ReadParticipants = (props) => {
           <thead>
             <tr>
               <th>#</th>
-              <th>Nama</th>
-              <th>Kata Sandi</th>
+              <th>Kode Peserta</th>
               <th>Waktu Mulai</th>
               <th>Waktu Selesai</th>
               <th>Total Poin</th>
@@ -201,7 +200,6 @@ const ReadParticipants = (props) => {
               <tr key={participant.id}>
                 <td className="p-3">{i+1}</td>
                 <td className="p-3">{participant.name}</td>
-                <td className="p-3">{participant.password}</td>
                 <td className="p-3">{
                   participant.started_at
                   ? (

@@ -10,7 +10,6 @@ const StartExam = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
   const [fetchedExam, setFetchedExam] = useState({});
 
   useEffect(() => {
@@ -51,7 +50,6 @@ const StartExam = () => {
     try {
       const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/exams/${examSerial}/start`, {
         name: name,
-        password: password,
       });
       const token = response.data.data.token;
       localStorage.setItem('examToken', token);
@@ -99,24 +97,12 @@ const StartExam = () => {
           <Form onSubmit={handleLogin}>
 
             <Form.Group controlId="formUsername">
-              <Form.Label>Nama</Form.Label>
+              <Form.Label>Kode</Form.Label>
               <Form.Control
                 type="text"
-                placeholder="Masukkan nama"
+                placeholder="Masukkan kode"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formPassword" className="mt-3">
-              <Form.Label>Kata Sandi</Form.Label>
-              <Form.Control
-                type="password"
-                placeholder="Masukkan kata sandi"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete='off'
                 required
               />
             </Form.Group>

@@ -47,17 +47,6 @@ func NewService(
 func (s *service) CreateParticipants(participants []*Participant) ([]*Participant, error) {
 	var err error
 
-	randomPassword, err := lib.GenerateRandomString(s.cfg.ParticipantRandomPasswordLength)
-	if err != nil {
-		log.Println("[participant][service][CreateParticipants] failed to generate password:", err.Error())
-		return nil, lib.ErrFailedToGenerateRandomString
-	}
-	for i := range participants {
-		if participants[i].Password == "" {
-			participants[i].Password = randomPassword
-		}
-	}
-
 	res, err := s.participantRepository.CreateParticipants(participants)
 	if err != nil {
 		log.Println("[participant][service][CreateParticipants] failed to create participants:", err.Error())

@@ -16,20 +16,12 @@ const AddParticipants = (props) => {
 
   const fields = [
     {
-      label: 'Nama-nama Peserta',
-      placeholder: 'Nama Peserta 1\nNama Peserta 2\nNama Peserta 3\n...',
+      label: 'Kode-kode Peserta (harus unik di dalam ujian ini, pisahkan di setiap baris)',
+      placeholder: 'KELAS-1-Nama Peserta 1\nKELAS-2-Nama Peserta 2\nKELAS-3-Nama Peserta 3\n...',
       name: 'names',
       type: 'textarea',
       rows: 8,
       required: true,
-      defaultValue: '',
-    },
-    {
-      label: 'Kata Sandi (jika dibiarkan kosong, maka kata sandi akan dibuat oleh sistem)',
-      placeholder: 'Kata sandi yang sama untuk semua peserta di atas',
-      name: 'password',
-      type: 'text',
-      required: false,
       defaultValue: '',
     },
   ]
@@ -73,7 +65,6 @@ const AddParticipants = (props) => {
     const customObject = {
       exam_serial: examSerial,
       names: formData.names.split('\n'),
-      password: formData.password,
     };
 
     console.log('customObject', customObject);

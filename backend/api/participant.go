@@ -22,28 +22,24 @@ type CreateParticipantsRequest struct {
 	ExamSerial string   `json:"exam_serial" binding:"required"`
 	ExamID     uint     `json:"-"`
 	Names      []string `json:"names" binding:"required"`
-	Password   string   `json:"password"`
 }
 
 type ParticipantData struct {
 	ID         uint       `json:"id"`
 	Name       string     `json:"name"`
-	Password   string     `json:"password"`
 	StartedAt  *time.Time `json:"started_at"`
 	EndedAt    *time.Time `json:"ended_at"`
 	TotalPoint int        `json:"total_point"`
 }
 
 type UpdateParticipantRequest struct {
-	ID       uint   `json:"-"`
-	Name     string `json:"name" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	ID   uint   `json:"-"`
+	Name string `json:"name" binding:"required"`
 }
 
 type StartExamRequest struct {
-	ExamID   uint   `json:"-"`
-	Name     string `json:"name" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	ExamID uint   `json:"-"`
+	Name   string `json:"name" binding:"required"`
 }
 
 type StartExamResponse struct {
@@ -245,13 +241,6 @@ func (h *handler) StartExam(c *gin.Context) {
 		return
 	}
 
-	if participant.Password != req.Password {
-		c.JSON(http.StatusNotFound, lib.BaseResponse{
-			Message: lib.ErrParticipantNotFound.Error(),
-		})
-		return
-	}
-
 	if participant.EndedAt != nil {
 		c.JSON(http.StatusBadRequest, lib.BaseResponse{
 			Message: lib.ErrExamAlreadySubmitted.Error(),
@@ -366,9 +355,8 @@ func (h *handler) MapCreateParticipantsRequestToParticipantEntityList(req *Creat
 	res := []*participant.Participant{}
 	for _, name := range req.Names {
 		res = append(res, &participant.Participant{
-			ExamID:   req.ExamID,
-			Name:     name,
-			Password: req.Password,
+			ExamID: req.ExamID,
+			Name:   name,
 		})
 	}
 	return res
@@ -378,7 +366,6 @@ func (h *handler) MapParticipantEntityToParticipantData(svcRes *participant.Part
 	return &ParticipantData{
 		ID:        svcRes.ID,
 		Name:      svcRes.Name,
-		Password:  svcRes.Password,
 		StartedAt: svcRes.StartedAt,
 		EndedAt:   svcRes.EndedAt,
 	}
@@ -399,8 +386,7 @@ func (h *handler) MapUpdateParticipantRequestToParticipantEntity(req *UpdatePart
 				ID: req.ID,
 			},
 		},
-		Name:     req.Name,
-		Password: req.Password,
+		Name: req.Name,
 	}
 }
 

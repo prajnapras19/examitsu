@@ -19,25 +19,17 @@ const EditParticipant = (props) => {
 
   const fields = [
     {
-      label: 'Nama',
+      label: 'Kode Peserta',
       name: 'name',
       type: 'text',
       required: true,
       defaultValue: ''
-    },
-    {
-      label: 'Kata Sandi',
-      name: 'password',
-      type: 'text',
-      required: true,
-      defaultValue: '',
     },
   ]
 
   // a copy of the fields default value
   const defaultValueMap = {
     name: '',
-    password: '',
   }
 
   const [formData, setFormData] = useState(
