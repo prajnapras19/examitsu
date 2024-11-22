@@ -8,6 +8,7 @@ import EditorJsHTML from 'editorjs-html';
 import { toast } from 'react-toastify';
 import FinishPage from './FinishPage';
 import SubmitConfirmationModal from './SubmitConfirmationModal';
+import Timer from './Timer';
 
 const ExamSession = () => {
   const [loading, setLoading] = useState(true);
@@ -20,6 +21,10 @@ const ExamSession = () => {
   const edjsParser = EditorJsHTML();
   const [disableChooseOption, setDisableChooseOption] = useState(false);
   const [disableChangeQuestion, setDisableChangeQuestion] = useState(false);
+  const [startTime, setStartTime] = useState(null);
+  const [duration, setDuration] = useState(null);
+  console.log('startTime', startTime);
+  console.log('duration', duration);
 
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -80,13 +85,15 @@ const ExamSession = () => {
       },
     })
     .then(response => { 
-      setQuestionIDList(response.data.data);
+      setQuestionIDList(response.data.data.questions_id_list);
+      setStartTime(response.data.data.start_time);
+      setDuration(response.data.data.duration);
       setDisableChooseOption(false);
       
-      if (currentQuestionNumber > response.data.data.length) {
+      if (currentQuestionNumber > response.data.data.questions_id_list.length) {
         setCurrentQuestion(null);
       } else {
-        axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/v1/exam-session/${examSerial}/questions/${response.data.data[currentQuestionNumber-1].id}`, {
+        axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/v1/exam-session/${examSerial}/questions/${response.data.data.questions_id_list[currentQuestionNumber-1].id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           },
@@ -224,6 +231,13 @@ const ExamSession = () => {
             disabled={disableChangeQuestion}
           />
         </Container>
+      <hr/>
+      <Container className="prevent-select">
+        <p style={{color: 'red'}}><i>Perhatian: soal akan diacak setiap kali terdapat revisi atau Anda memuat ulang (refresh) halaman ini.</i></p>
+        <p>
+          <b>Waktu tersisa:</b> <Timer startTime={startTime} durationMinutes={duration} onTimesUp={() => setIsSubmitted(true)}></Timer>
+        </p>
+      </Container>
       <hr/>
       <h3 className="text-center prevent-select">Soal {currentQuestionNumber}</h3>
       <hr/>

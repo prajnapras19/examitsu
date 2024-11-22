@@ -60,6 +60,12 @@ type GetUploadQuestionBlobURLResponse struct {
 	PublicURL string `json:"public_url"`
 }
 
+type GetExamSessionDetail struct {
+	QuestionsIDList []*QuestionDataIDOnly `json:"questions_id_list"`
+	StartTime       time.Time             `json:"start_time"`
+	Duration        uint                  `json:"duration"`
+}
+
 /***
 	handler
 ***/
@@ -259,7 +265,7 @@ func (h *handler) GetQuestionsIDByExamSerial(c *gin.Context) {
 		return
 	}
 
-	if participant.EndedAt != nil {
+	if participant.EndedAt != nil || participant.StartedAt.Add(time.Duration(participant.AllowedDurationMinutes)*time.Minute).Before(time.Now()) {
 		c.JSON(http.StatusBadRequest, lib.BaseResponse{
 			Message: lib.ErrExamAlreadySubmitted.Error(),
 		})
@@ -296,7 +302,11 @@ func (h *handler) GetQuestionsIDByExamSerial(c *gin.Context) {
 		return
 	}
 
-	res := h.MapQuestionEntityListToQuestionDataIDOnlyList(svcRes)
+	res := GetExamSessionDetail{
+		QuestionsIDList: h.MapQuestionEntityListToQuestionDataIDOnlyList(svcRes),
+		StartTime:       *participant.StartedAt,
+		Duration:        participant.AllowedDurationMinutes,
+	}
 	c.JSON(http.StatusOK, lib.BaseResponse{
 		Message: constants.Success,
 		Data:    res,
@@ -334,7 +344,7 @@ func (h *handler) GetQuestionWithOptions(c *gin.Context) {
 		return
 	}
 
-	if participant.EndedAt != nil {
+	if participant.EndedAt != nil || participant.StartedAt.Add(time.Duration(participant.AllowedDurationMinutes)*time.Minute).Before(time.Now()) {
 		c.JSON(http.StatusBadRequest, lib.BaseResponse{
 			Message: lib.ErrExamAlreadySubmitted.Error(),
 		})
@@ -456,7 +466,7 @@ func (h *handler) SubmitAnswer(c *gin.Context) {
 		return
 	}
 
-	if participant.EndedAt != nil {
+	if participant.EndedAt != nil || participant.StartedAt.Add(time.Duration(participant.AllowedDurationMinutes)*time.Minute).Before(time.Now()) {
 		c.JSON(http.StatusBadRequest, lib.BaseResponse{
 			Message: lib.ErrExamAlreadySubmitted.Error(),
 		})
