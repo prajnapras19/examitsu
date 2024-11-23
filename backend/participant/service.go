@@ -21,7 +21,7 @@ type Service interface {
 
 	GetParticipantTotalPointsByExamID(examID uint) ([]*ParticipantTotalPoint, error)
 
-	GenerateToken(examSerial string, participantID uint) string
+	GenerateToken(examSerial string, participantID uint, sessionSerial string) string
 	VerifyToken(token *jwt.Token) (interface{}, error)
 	ValidateToken(tokenString string) (*lib.ExamTokenJWTClaims, error)
 }
@@ -122,13 +122,14 @@ func (s *service) GetParticipantTotalPointsByExamID(examID uint) ([]*Participant
 	return res, nil
 }
 
-func (s *service) GenerateToken(examSerial string, participantID uint) string {
+func (s *service) GenerateToken(examSerial string, participantID uint, sessionSerial string) string {
 	claims := lib.ExamTokenJWTClaims{
 		StandardClaims: jwt.StandardClaims{
 			Issuer:    s.cfg.AuthConfig.ApplicationName,
 			ExpiresAt: time.Now().Add(s.cfg.AuthConfig.LoginTokenExpirationDuration).Unix(),
 		},
 		ParticipantID: participantID,
+		SessionSerial: sessionSerial,
 	}
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,

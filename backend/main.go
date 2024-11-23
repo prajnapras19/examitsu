@@ -16,6 +16,7 @@ import (
 	"github.com/prajnapras19/project-form-exam-sman2/backend/exam"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/mcqoption"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/participant"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/participantsession"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/question"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/submission"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/worker"
@@ -50,6 +51,7 @@ func initDefault(cfg *config.Config) {
 	mcqOptionRepository := mcqoption.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient())
 	participantRepository := participant.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient())
 	submissionRepository := submission.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient())
+	participantSessionRepository := participantsession.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient())
 
 	// services
 	adminAuthService := adminauth.NewService(cfg)
@@ -58,6 +60,7 @@ func initDefault(cfg *config.Config) {
 	mcqOptionService := mcqoption.NewService(mcqOptionRepository)
 	participantService := participant.NewService(cfg, participantRepository, examService)
 	submissionService := submission.NewService(submissionRepository, dbredis.GetClient(), updateAnswerQueue)
+	participantSessionService := participantsession.NewService(participantSessionRepository)
 
 	// handlers
 	handler := api.NewHandler(
@@ -69,6 +72,7 @@ func initDefault(cfg *config.Config) {
 		participantService,
 		submissionService,
 		storageService,
+		participantSessionService,
 	)
 
 	// routes

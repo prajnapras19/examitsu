@@ -12,7 +12,7 @@ type Service interface {
 	CreateParticipantSession(participantSession *ParticipantSession) (*ParticipantSession, error)
 	GetParticipantSessionBySerial(serial string) (*ParticipantSession, error)
 	GetLatestAuthorizedParticipantSessionByParticipantID(participantID uint) (*ParticipantSession, error)
-	AuthorizeSession(serial string) error
+	AuthorizeSession(serial string, durationMinutes uint) error
 }
 
 type service struct {
@@ -65,8 +65,8 @@ func (s *service) GetLatestAuthorizedParticipantSessionByParticipantID(participa
 	return res, nil
 }
 
-func (s *service) AuthorizeSession(serial string) error {
-	err := s.participantSessionRepository.AuthorizeSession(serial)
+func (s *service) AuthorizeSession(serial string, durationMinutes uint) error {
+	err := s.participantSessionRepository.AuthorizeSession(serial, durationMinutes)
 	if err != nil {
 		log.Println("[participantsession][service][AuthorizeSession] failed to authorize session:", err.Error())
 		return lib.ErrFailedToAuthorizeParticipantSession

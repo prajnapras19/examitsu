@@ -25,7 +25,8 @@ func GetJWTClaimsFromContext(c *gin.Context) (*JWTClaims, error) {
 type ExamTokenJWTClaims struct {
 	jwt.StandardClaims
 
-	ParticipantID uint `json:"pid"`
+	ParticipantID uint   `json:"pid"`
+	SessionSerial string `json:"sess"`
 }
 
 func GetExamTokenJWTClaimsFromContext(c *gin.Context) (*ExamTokenJWTClaims, error) {

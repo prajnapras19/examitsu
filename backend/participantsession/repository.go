@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
@@ -16,7 +17,7 @@ type Repository interface {
 	CreateParticipantSession(participantSession *ParticipantSession) (*ParticipantSession, error)
 	GetParticipantSessionBySerial(serial string) (*ParticipantSession, error)
 	GetLatestAuthorizedParticipantSessionByParticipantID(participantID uint) (*ParticipantSession, error)
-	AuthorizeSession(serial string) error
+	AuthorizeSession(serial string, durationMinutes uint) error
 }
 
 type repository struct {
@@ -86,16 +87,44 @@ func (r *repository) GetLatestAuthorizedParticipantSessionByParticipantID(partic
 	return &participantSession, nil
 }
 
-func (r *repository) AuthorizeSession(serial string) error {
+func (r *repository) AuthorizeSession(serial string, durationMinutes uint) error {
+	var startExam bool
 	currentData, err := r.GetParticipantSessionBySerial(serial)
 	if err != nil {
-		return err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return lib.ErrFailedToGetParticipantSession
+		} else {
+			return err
+		}
 	}
 
 	r.cache.Del(context.Background(), r.GetParticipantSessionBySerialCacheKey(currentData.Serial))
 	r.cache.Del(context.Background(), r.GetLatestAuthorizedParticipantSessionByParticipantIDCacheKey(currentData.ParticipantID))
 
-	return r.db.Model(&ParticipantSession{}).Update("is_authorized", true).Error
+	// if there is no authorized session previously, then this function should update participant's start time and duration
+	_, err = r.GetLatestAuthorizedParticipantSessionByParticipantID(currentData.ParticipantID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return lib.ErrFailedToGetParticipantSession
+		} else {
+			return err
+		}
+	}
+
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		err := tx.Model(&ParticipantSession{}).Update("is_authorized", true).Error
+		if err != nil {
+			return err
+		}
+		if startExam {
+			return tx.Table("participants").Where("id = ?", currentData.ParticipantID).Updates(
+				map[string]interface{}{
+					"started_at":               time.Now(),
+					"allowed_duration_minutes": durationMinutes,
+				}).Error
+		}
+		return nil
+	})
 }
 
 func (r *repository) GetParticipantSessionBySerialCacheKey(serial string) string {

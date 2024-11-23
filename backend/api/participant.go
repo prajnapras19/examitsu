@@ -11,6 +11,7 @@ import (
 	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/participant"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/participantsession"
 	"gorm.io/gorm"
 )
 
@@ -46,7 +47,8 @@ type StartExamRequest struct {
 }
 
 type StartExamResponse struct {
-	Token string `json:"token"`
+	Token         string `json:"token"`
+	SessionSerial string `json:"session"`
 }
 
 /***
@@ -258,9 +260,9 @@ func (h *handler) StartExam(c *gin.Context) {
 		return
 	}
 
-	currentTime := time.Now()
-	participant.StartedAt = &currentTime
-	err = h.participantService.UpdateParticipant(participant)
+	participantSession, err := h.participantSessionService.CreateParticipantSession(&participantsession.ParticipantSession{
+		ParticipantID: participant.ID,
+	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
 			Message: err.Error(),
@@ -269,11 +271,12 @@ func (h *handler) StartExam(c *gin.Context) {
 	}
 
 	// generate exam token
-	examToken := h.participantService.GenerateToken(exam.Serial, participant.ID)
+	examToken := h.participantService.GenerateToken(exam.Serial, participant.ID, participantSession.Serial)
 	c.JSON(http.StatusOK, lib.BaseResponse{
 		Message: constants.Success,
 		Data: StartExamResponse{
-			Token: examToken,
+			Token:         examToken,
+			SessionSerial: participantSession.Serial,
 		},
 	})
 }
@@ -330,6 +333,13 @@ func (h *handler) SubmitExam(c *gin.Context) {
 		return
 	}
 	if !exam.IsOpen || exam.Serial != c.Param(constants.Serial) {
+		c.JSON(http.StatusNotFound, lib.BaseResponse{
+			Message: lib.ErrExamNotFound.Error(),
+		})
+		return
+	}
+	participantSession, err := h.participantSessionService.GetLatestAuthorizedParticipantSessionByParticipantID(participant.ID)
+	if participantSession.Serial != jwtClaims.SessionSerial {
 		c.JSON(http.StatusNotFound, lib.BaseResponse{
 			Message: lib.ErrExamNotFound.Error(),
 		})

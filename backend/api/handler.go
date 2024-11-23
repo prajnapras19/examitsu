@@ -8,6 +8,7 @@ import (
 	"github.com/prajnapras19/project-form-exam-sman2/backend/exam"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/mcqoption"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/participant"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/participantsession"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/question"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/submission"
 )
@@ -51,14 +52,15 @@ type Handler interface {
 }
 
 type handler struct {
-	cfg                *config.Config
-	adminAuthService   adminauth.Service
-	examService        exam.Service
-	questionService    question.Service
-	mcqOptionService   mcqoption.Service
-	participantService participant.Service
-	submissionService  submission.Service
-	storageService     storage.Service
+	cfg                       *config.Config
+	adminAuthService          adminauth.Service
+	examService               exam.Service
+	questionService           question.Service
+	mcqOptionService          mcqoption.Service
+	participantService        participant.Service
+	submissionService         submission.Service
+	storageService            storage.Service
+	participantSessionService participantsession.Service
 }
 
 func NewHandler(
@@ -70,15 +72,17 @@ func NewHandler(
 	participantService participant.Service,
 	submissionService submission.Service,
 	storageService storage.Service,
+	participantSessionService participantsession.Service,
 ) Handler {
 	return &handler{
-		cfg:                cfg,
-		adminAuthService:   adminAuthService,
-		examService:        examService,
-		questionService:    questionService,
-		mcqOptionService:   mcqOptionService,
-		participantService: participantService,
-		submissionService:  submissionService,
-		storageService:     storageService,
+		cfg:                       cfg,
+		adminAuthService:          adminAuthService,
+		examService:               examService,
+		questionService:           questionService,
+		mcqOptionService:          mcqOptionService,
+		participantService:        participantService,
+		submissionService:         submissionService,
+		storageService:            storageService,
+		participantSessionService: participantSessionService,
 	}
 }
