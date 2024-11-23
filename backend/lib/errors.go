@@ -77,4 +77,12 @@ var (
 
 	// storage.service
 	ErrFailedToGetUploadURL = errors.New("failed to get upload url")
+
+	// participantsession.repository
+	ErrParticipantSessionNotFound = errors.New("failed to get participant session")
+
+	// participantsession.service
+	ErrFailedToCreateParticipantSession    = errors.New("failed to create participant session")
+	ErrFailedToGetParticipantSession       = errors.New("failed to get participant session")
+	ErrFailedToAuthorizeParticipantSession = errors.New("failed to authorize participant session")
 )
