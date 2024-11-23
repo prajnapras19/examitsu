@@ -360,6 +360,18 @@ func (h *handler) SubmitExam(c *gin.Context) {
 	})
 }
 
+func (h *handler) IsSessionAuthorized(c *gin.Context) {
+	// TODO: return success, 404, 401, or 500 depending on if the request exam token session serial is authorized or not
+}
+
+func (h *handler) CheckSession(c *gin.Context) {
+	// TODO: return data need to be seen by proctor to be able to authorize session
+}
+
+func (h *handler) AuthorizeSession(c *gin.Context) {
+	// TODO: authorize session as proctor
+}
+
 /***
 	mapping
 ***/

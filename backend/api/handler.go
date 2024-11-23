@@ -24,7 +24,6 @@ type Handler interface {
 	DeleteExamBySerial(*gin.Context)
 	GetOpenedExam(*gin.Context)
 	GetAllOpenedExams(*gin.Context)
-	StartExam(*gin.Context)
 
 	CreateQuestion(*gin.Context)
 	GetUploadQuestionBlobURL(*gin.Context)
@@ -32,6 +31,12 @@ type Handler interface {
 	GetQuestionByID(*gin.Context)
 	UpdateQuestion(*gin.Context)
 	DeleteQuestionBySerial(*gin.Context)
+
+	// exam session auth
+	StartExam(*gin.Context)
+	IsSessionAuthorized(*gin.Context)
+	CheckSession(*gin.Context)
+	AuthorizeSession(*gin.Context)
 
 	// exam session
 	GetQuestionsIDByExamSerial(*gin.Context)
