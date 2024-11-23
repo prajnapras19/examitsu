@@ -111,6 +111,7 @@ func initDefault(cfg *config.Config) {
 	adminGroup.PATCH("/participants/:id", handler.UpdateParticipant)
 	adminGroup.DELETE("/participants/:id", handler.DeleteParticipantByID)
 
+	apiV1.GET("/exams", handler.GetAllOpenedExams)
 	apiV1.GET("/exams/:serial", handler.GetOpenedExam)
 	apiV1.POST("/exams/:serial/start", handler.StartExam)
 

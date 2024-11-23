@@ -61,3 +61,22 @@ func (f *QueryFiltersInUintArray) Scope(fieldName string) func(*gorm.DB) *gorm.D
 		return db
 	}
 }
+
+type QueryFiltersEqualBool struct {
+	Value bool `json:"value"`
+}
+
+func (f *QueryFiltersEqualBool) Scope(fieldName string) func(*gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if f.Value {
+			db = db.Where(
+				fmt.Sprintf("%s", fieldName),
+			)
+		} else {
+			db = db.Where(
+				fmt.Sprintf("NOT %s", fieldName),
+			)
+		}
+		return db
+	}
+}

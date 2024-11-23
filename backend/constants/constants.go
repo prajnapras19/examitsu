@@ -11,6 +11,7 @@ const (
 
 	ID          = "id"
 	Serial      = "serial"
+	IsOpen      = "is_open"
 	ExamID      = "exam_id"
 	OrderNumber = "order_number"
 

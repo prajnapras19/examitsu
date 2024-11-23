@@ -18,6 +18,7 @@ type Exam struct {
 
 type GetExamsFilter struct {
 	SerialEqualsTo *lib.QueryFiltersEqualToString `json:"serial_equals_to"`
+	IsOpenEqualsTo *lib.QueryFiltersEqualBool     `json:"is_open_equals_to"`
 }
 
 func (f *GetExamsFilter) Scope() []func(db *gorm.DB) *gorm.DB {
@@ -25,6 +26,10 @@ func (f *GetExamsFilter) Scope() []func(db *gorm.DB) *gorm.DB {
 
 	if f.SerialEqualsTo != nil {
 		scopes = append(scopes, f.SerialEqualsTo.Scope(constants.Serial))
+	}
+
+	if f.IsOpenEqualsTo != nil {
+		scopes = append(scopes, f.IsOpenEqualsTo.Scope(constants.IsOpen))
 	}
 
 	return scopes
