@@ -9,6 +9,7 @@ import AdminRoutes from './AdminRoutes';
 import ParticipantRoutes from './ParticipantRoutes';
 import StartExam from './components/participant/StartExam';
 import InternalServerErrorPage from './components/etc/500';
+import GetAllOpenedExams from './components/participant/GetAllOpenedExams';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <ToastContainer />
         <Routes>
           <Route path="/admin/*" element={<AdminRoutes/>}/>
+          <Route path="/" element={<GetAllOpenedExams/>} />
           <Route path="/exam/:examSerial" element={<StartExam/>} />
           <Route path="/exam-session/*" element={<ParticipantRoutes/>}/>
           <Route path="/500" element={<InternalServerErrorPage/>} />
