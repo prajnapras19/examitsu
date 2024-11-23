@@ -253,13 +253,6 @@ func (h *handler) StartExam(c *gin.Context) {
 		return
 	}
 
-	if participant.StartedAt != nil {
-		c.JSON(http.StatusBadRequest, lib.BaseResponse{
-			Message: lib.ErrExamAlreadyStarted.Error(),
-		})
-		return
-	}
-
 	participantSession, err := h.participantSessionService.CreateParticipantSession(&participantsession.ParticipantSession{
 		ParticipantID: participant.ID,
 	})
