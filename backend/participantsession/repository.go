@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
@@ -96,13 +95,7 @@ func (r *repository) AuthorizeSession(serial string) error {
 	r.cache.Del(context.Background(), r.GetParticipantSessionBySerialCacheKey(currentData.Serial))
 	r.cache.Del(context.Background(), r.GetLatestAuthorizedParticipantSessionByParticipantIDCacheKey(currentData.ParticipantID))
 
-	return r.db.Transaction(func(tx *gorm.DB) error {
-		err := tx.Model(&ParticipantSession{}).Update("is_authorized", true).Error
-		if err != nil {
-			return err
-		}
-		return tx.Table("participants").Where("id = ?", currentData.ParticipantID).Update("started_at", time.Now()).Error
-	})
+	return r.db.Model(&ParticipantSession{}).Update("is_authorized", true).Error
 }
 
 func (r *repository) GetParticipantSessionBySerialCacheKey(serial string) string {
