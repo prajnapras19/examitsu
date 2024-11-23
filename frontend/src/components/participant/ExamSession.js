@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import FinishPage from './FinishPage';
 import SubmitConfirmationModal from './SubmitConfirmationModal';
 import Timer from './Timer';
+import { shuffleArray } from '../../utils/random';
 
 const ExamSession = () => {
   const [loading, setLoading] = useState(true);
@@ -16,6 +17,7 @@ const ExamSession = () => {
   const { examSerial } = useParams();
   const navigate = useNavigate();
   const [questionIDList, setQuestionIDList] = useState([]);
+  const [questionIDSet, setQuestionIDSet] = useState(new Set());
   const [currentQuestionNumber, setCurrentQuestionNumber] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const edjsParser = EditorJsHTML();
@@ -23,8 +25,6 @@ const ExamSession = () => {
   const [disableChangeQuestion, setDisableChangeQuestion] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [duration, setDuration] = useState(null);
-  console.log('startTime', startTime);
-  console.log('duration', duration);
 
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -84,16 +84,27 @@ const ExamSession = () => {
         'Authorization': `Bearer ${token}`
       },
     })
-    .then(response => { 
-      setQuestionIDList(response.data.data.questions_id_list);
+    .then(response => {
+      const newSet = new Set();
+      for (let i = 0; i < response.data.data.questions_id_list.length; i++) {
+        newSet.add(response.data.data.questions_id_list[i].id);
+      }
+
+      let shuffledQuestions = questionIDList;
+      if (newSet.symmetricDifference(questionIDSet).size > 0) {
+        setQuestionIDSet(newSet);
+        shuffledQuestions = shuffleArray(response.data.data.questions_id_list);
+        setQuestionIDList(shuffledQuestions);
+      }
+      
       setStartTime(response.data.data.start_time);
       setDuration(response.data.data.duration);
       setDisableChooseOption(false);
       
-      if (currentQuestionNumber > response.data.data.questions_id_list.length) {
+      if (currentQuestionNumber > shuffledQuestions.length) {
         setCurrentQuestion(null);
       } else {
-        axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/v1/exam-session/${examSerial}/questions/${response.data.data.questions_id_list[currentQuestionNumber-1].id}`, {
+        axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/v1/exam-session/${examSerial}/questions/${shuffledQuestions[currentQuestionNumber-1].id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           },
@@ -233,7 +244,6 @@ const ExamSession = () => {
         </Container>
       <hr/>
       <Container className="prevent-select">
-        <p style={{color: 'red'}}><i>Perhatian: soal akan diacak setiap kali terdapat revisi atau Anda memuat ulang (refresh) halaman ini.</i></p>
         <p>
           <b>Waktu tersisa:</b> <Timer startTime={startTime} durationMinutes={duration} onTimesUp={() => setIsSubmitted(true)}></Timer>
         </p>
