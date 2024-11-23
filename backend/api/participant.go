@@ -202,6 +202,7 @@ func (h *handler) DeleteParticipantByID(c *gin.Context) {
 }
 
 func (h *handler) StartExam(c *gin.Context) {
+	// TODO: rate limit per participant
 	var req StartExamRequest
 
 	if err := c.ShouldBind(&req); err != nil {
@@ -332,9 +333,15 @@ func (h *handler) SubmitExam(c *gin.Context) {
 		return
 	}
 	participantSession, err := h.participantSessionService.GetLatestAuthorizedParticipantSessionByParticipantID(participant.ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, lib.BaseResponse{
+			Message: lib.ErrSessionNotFound.Error(),
+		})
+		return
+	}
 	if participantSession.Serial != jwtClaims.SessionSerial {
 		c.JSON(http.StatusNotFound, lib.BaseResponse{
-			Message: lib.ErrExamNotFound.Error(),
+			Message: lib.ErrSessionNotFound.Error(),
 		})
 		return
 	}
@@ -355,6 +362,72 @@ func (h *handler) SubmitExam(c *gin.Context) {
 
 func (h *handler) IsSessionAuthorized(c *gin.Context) {
 	// TODO: return success, 404, 401, or 500 depending on if the request exam token session serial is authorized or not
+	jwtClaims, err := lib.GetExamTokenJWTClaimsFromContext(c)
+	if err != nil {
+		log.Printf("[handler][participant][IsSessionAuthorized] error when get jwt: %s", err.Error())
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: lib.ErrUnknownError.Error(),
+		})
+		return
+	}
+
+	participant, err := h.participantService.GetParticipantByID(jwtClaims.ParticipantID)
+	if err != nil {
+		if errors.Is(err, lib.ErrParticipantNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	if participant.EndedAt != nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrExamAlreadySubmitted.Error(),
+		})
+		return
+	}
+
+	exam, err := h.examService.GetExamByID(participant.ExamID)
+	if err != nil {
+		if errors.Is(err, lib.ErrExamNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	if !exam.IsOpen || exam.Serial != c.Param(constants.Serial) {
+		c.JSON(http.StatusNotFound, lib.BaseResponse{
+			Message: lib.ErrExamNotFound.Error(),
+		})
+		return
+	}
+	participantSession, err := h.participantSessionService.GetLatestAuthorizedParticipantSessionByParticipantID(participant.ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, lib.BaseResponse{
+			Message: lib.ErrSessionNotFound.Error(),
+		})
+		return
+	}
+	if participantSession.Serial != jwtClaims.SessionSerial {
+		c.JSON(http.StatusNotFound, lib.BaseResponse{
+			Message: lib.ErrSessionNotFound.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, lib.BaseResponse{
+		Message: constants.Success,
+	})
 }
 
 func (h *handler) CheckSession(c *gin.Context) {

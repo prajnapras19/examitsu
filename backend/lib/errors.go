@@ -12,6 +12,7 @@ var (
 	ErrExamAlreadySubmitted = errors.New("exam already submitted")
 	ErrExamAlreadyStarted   = errors.New("exam already started")
 	ErrExamNotStarted       = errors.New("exam not started")
+	ErrSessionNotFound      = errors.New("session not found")
 
 	// lib.jwt_claims
 	ErrFailedToParseJWTClaimsInContext = errors.New("failed to parse jwt claims in context")

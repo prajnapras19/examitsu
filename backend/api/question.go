@@ -295,9 +295,15 @@ func (h *handler) GetQuestionsIDByExamSerial(c *gin.Context) {
 	}
 
 	participantSession, err := h.participantSessionService.GetLatestAuthorizedParticipantSessionByParticipantID(participant.ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, lib.BaseResponse{
+			Message: lib.ErrSessionNotFound.Error(),
+		})
+		return
+	}
 	if participantSession.Serial != jwtClaims.SessionSerial {
 		c.JSON(http.StatusNotFound, lib.BaseResponse{
-			Message: lib.ErrExamNotFound.Error(),
+			Message: lib.ErrSessionNotFound.Error(),
 		})
 		return
 	}
@@ -382,9 +388,15 @@ func (h *handler) GetQuestionWithOptions(c *gin.Context) {
 	}
 
 	participantSession, err := h.participantSessionService.GetLatestAuthorizedParticipantSessionByParticipantID(participant.ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, lib.BaseResponse{
+			Message: lib.ErrSessionNotFound.Error(),
+		})
+		return
+	}
 	if participantSession.Serial != jwtClaims.SessionSerial {
 		c.JSON(http.StatusNotFound, lib.BaseResponse{
-			Message: lib.ErrExamNotFound.Error(),
+			Message: lib.ErrSessionNotFound.Error(),
 		})
 		return
 	}
@@ -512,9 +524,15 @@ func (h *handler) SubmitAnswer(c *gin.Context) {
 	}
 
 	participantSession, err := h.participantSessionService.GetLatestAuthorizedParticipantSessionByParticipantID(participant.ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, lib.BaseResponse{
+			Message: lib.ErrSessionNotFound.Error(),
+		})
+		return
+	}
 	if participantSession.Serial != jwtClaims.SessionSerial {
 		c.JSON(http.StatusNotFound, lib.BaseResponse{
-			Message: lib.ErrExamNotFound.Error(),
+			Message: lib.ErrSessionNotFound.Error(),
 		})
 		return
 	}

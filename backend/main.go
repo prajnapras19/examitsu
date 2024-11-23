@@ -121,6 +121,7 @@ func initDefault(cfg *config.Config) {
 
 	examSessionGroup := apiV1.Group("/exam-session")
 	examSessionGroup.Use(api.JWTExamTokenMiddleware(participantService))
+	examSessionGroup.GET("/:serial/check", handler.IsSessionAuthorized)
 	examSessionGroup.GET("/:serial/questions", handler.GetQuestionsIDByExamSerial)
 	examSessionGroup.GET("/:serial/questions/:id", handler.GetQuestionWithOptions)
 	examSessionGroup.POST("/:serial/questions/:id", handler.SubmitAnswer)
