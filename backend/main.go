@@ -127,6 +127,11 @@ func initDefault(cfg *config.Config) {
 	examSessionGroup.POST("/:serial/questions/:id", handler.SubmitAnswer)
 	examSessionGroup.POST("/:serial/submit", handler.SubmitExam)
 
+	proctorGroup := apiV1.Group("/proctor")
+	proctorGroup.POST("/login", handler.LoginProctor)
+	proctorGroup.Use(api.JWTProctorMiddleware(adminAuthService))
+	proctorGroup.GET("/is-logged-in", handler.IsLoggedInAsProctor)
+
 	router.Run(fmt.Sprintf(":%d", cfg.RESTPort))
 }
 

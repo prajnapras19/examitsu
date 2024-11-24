@@ -17,6 +17,7 @@ services:
       GORM_LOG_LEVEL: 4
       JWT_SIGNATURE_KEY: REDACTED
       SYSTEM_PASSWORD: REDACTED
+      PROCTOR_PASSWORD: REDACTED
       STORAGE_SERVICE_ACCOUNT_KEY_PATH: /etc/secret/gcs-service-account.json
     logging:
       driver: "json-file"

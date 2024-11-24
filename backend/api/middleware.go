@@ -59,6 +59,32 @@ func JWTAdminMiddleware(adminAuthService adminauth.Service) gin.HandlerFunc {
 	}
 }
 
+func JWTProctorMiddleware(adminAuthService adminauth.Service) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authorizationHeader := c.GetHeader("Authorization")
+		if authorizationHeader == "" {
+			c.JSON(http.StatusUnauthorized, lib.BaseResponse{
+				Message: ErrUnauthorizedRequest.Error(),
+			})
+			c.Abort()
+			return
+		}
+		tokenString := strings.Replace(authorizationHeader, "Bearer ", "", -1)
+		claims, err := adminAuthService.ValidateProctorToken(tokenString)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			c.Abort()
+			return
+		}
+
+		c.Set(constants.JWTClaims, claims)
+
+		c.Next()
+	}
+}
+
 func JWTExamTokenMiddleware(participantService participant.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authorizationHeader := c.GetHeader("Authorization")

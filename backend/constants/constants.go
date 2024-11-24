@@ -7,7 +7,8 @@ const (
 	Error     = "error"
 	Worker    = "worker"
 
-	SystemUser = "SYSTEM"
+	SystemUser  = "SYSTEM"
+	ProctorUser = "PROCTOR"
 
 	ID          = "id"
 	Serial      = "serial"

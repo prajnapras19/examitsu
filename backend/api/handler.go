@@ -54,6 +54,9 @@ type Handler interface {
 	GetParticipantByID(*gin.Context)
 	UpdateParticipant(*gin.Context)
 	DeleteParticipantByID(*gin.Context)
+
+	LoginProctor(*gin.Context)
+	IsLoggedInAsProctor(*gin.Context)
 }
 
 type handler struct {

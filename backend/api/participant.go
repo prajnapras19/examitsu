@@ -430,14 +430,6 @@ func (h *handler) IsSessionAuthorized(c *gin.Context) {
 	})
 }
 
-func (h *handler) CheckSession(c *gin.Context) {
-	// TODO: return data need to be seen by proctor to be able to authorize session
-}
-
-func (h *handler) AuthorizeSession(c *gin.Context) {
-	// TODO: authorize session as proctor
-}
-
 /***
 	mapping
 ***/

@@ -14,6 +14,9 @@ type Service interface {
 	GenerateToken(username string) string
 	ValidateToken(tokenString string) (*lib.JWTClaims, error)
 	VerifyToken(token *jwt.Token) (interface{}, error)
+
+	LoginProctor(req *LoginRequest) (*LoginResponse, error)
+	ValidateProctorToken(tokenString string) (*lib.JWTClaims, error)
 }
 type service struct {
 	cfg *config.Config
@@ -33,6 +36,15 @@ func (s *service) Login(req *LoginRequest) (*LoginResponse, error) {
 	}
 	return &LoginResponse{
 		Token: s.GenerateToken(constants.SystemUser),
+	}, nil
+}
+
+func (s *service) LoginProctor(req *LoginRequest) (*LoginResponse, error) {
+	if req.Password != s.cfg.ProctorPassword {
+		return nil, lib.ErrIncorrectPassword
+	}
+	return &LoginResponse{
+		Token: s.GenerateToken(constants.ProctorUser),
 	}, nil
 }
 
@@ -75,6 +87,26 @@ func (s *service) ValidateToken(tokenString string) (*lib.JWTClaims, error) {
 		return nil, lib.ErrUnauthorizedRequest
 	}
 	if claims.Username != constants.SystemUser {
+		return nil, lib.ErrUnauthorizedRequest
+	}
+
+	return claims, nil
+}
+
+func (s *service) ValidateProctorToken(tokenString string) (*lib.JWTClaims, error) {
+	claims := &lib.JWTClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, s.VerifyToken)
+	if err != nil {
+		return nil, lib.ErrUnauthorizedRequest
+	}
+	if !token.Valid {
+		return nil, lib.ErrUnauthorizedRequest
+	}
+	claims, ok := token.Claims.(*lib.JWTClaims)
+	if !ok {
+		return nil, lib.ErrUnauthorizedRequest
+	}
+	if claims.Username != constants.ProctorUser {
 		return nil, lib.ErrUnauthorizedRequest
 	}
 
