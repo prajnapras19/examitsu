@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { useNavigate, useParams } from 'react-router-dom';
-import {QRCodeSVG} from 'qrcode.react';
+import ExamSessionQRCode from './ExamSessionQRCode';
 
 const StartExam = () => {
   const { examSerial } = useParams();
@@ -52,24 +52,13 @@ const StartExam = () => {
       navigate(`/exam-session/${examSerial}`);
     }
     return (
-      <Container className="text-center">
-        <h1 className="my-4 text-center">Ujian {fetchedExam.name}</h1>
-        <hr/>
-        <QRCodeSVG value={examSessionSerial} size={256}/>
-        <hr/>
-        <p>Tunjukkan kode QR kepada pengawas untuk memulai ujian.</p>
-      </Container>
+      <ExamSessionQRCode
+        examSerial={examSerial}
+        fetchedExam={fetchedExam}
+        examSessionSerial={examSessionSerial}
+        setIsSessionAuthorized={setIsSessionAuthorized}
+      />
     );
-  }
-
-  const checkIsAuthorized = () => {
-    axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/v1/exam-session/${examSerial}/check`)
-    .then(response => {
-      setIsSessionAuthorized(true);
-    })
-    .catch(error => {
-      setTimeout(checkIsAuthorized, 1000);
-    });
   }
 
   const handleLogin = async (e) => {
@@ -82,7 +71,6 @@ const StartExam = () => {
       const token = response.data.data.token;
       localStorage.setItem('examToken', token);
       setExamSessionSerial(response.data.data.session);
-      setTimeout(checkIsAuthorized, 1000);
     } catch (error) {
       console.error(error);
       if (error.status === 400) {
