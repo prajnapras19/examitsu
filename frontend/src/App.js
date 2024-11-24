@@ -10,6 +10,7 @@ import ParticipantRoutes from './ParticipantRoutes';
 import StartExam from './components/participant/StartExam';
 import InternalServerErrorPage from './components/etc/500';
 import GetAllOpenedExams from './components/participant/GetAllOpenedExams';
+import ProctorRoutes from './ProctorRoutes';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/" element={<GetAllOpenedExams/>} />
           <Route path="/exam/:examSerial" element={<StartExam/>} />
           <Route path="/exam-session/*" element={<ParticipantRoutes/>}/>
+          <Route path="/proctor/*" element={<ProctorRoutes/>}/>
           <Route path="/500" element={<InternalServerErrorPage/>} />
           <Route path="*" element={<NotFoundPage/>}/>
         </Routes>
