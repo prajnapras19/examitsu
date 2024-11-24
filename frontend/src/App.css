@@ -20,10 +20,18 @@
   user-select: none; /* Standard syntax */
 }
 
+.change-page-button-group {
+  display: flex;
+  direction: column;
+}
+
 @media (width < 70em) {
   .card-grid {
     display: grid;
     grid-gap: 2rem;
     grid-template-columns: repeat(auto-fit, 100%);
+  }
+  .change-page-button-group {
+    display: flex;
   }
 }
