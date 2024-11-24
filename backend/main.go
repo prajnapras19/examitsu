@@ -51,7 +51,7 @@ func initDefault(cfg *config.Config) {
 	mcqOptionRepository := mcqoption.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient())
 	participantRepository := participant.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient())
 	submissionRepository := submission.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient())
-	participantSessionRepository := participantsession.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient())
+	participantSessionRepository := participantsession.NewRepository(cfg, dbmysql.GetDB(), dbredis.GetClient(), participantRepository)
 
 	// services
 	adminAuthService := adminauth.NewService(cfg)
@@ -131,7 +131,8 @@ func initDefault(cfg *config.Config) {
 	proctorGroup.POST("/login", handler.LoginProctor)
 	proctorGroup.Use(api.JWTProctorMiddleware(adminAuthService))
 	proctorGroup.GET("/is-logged-in", handler.IsLoggedInAsProctor)
-	proctorGroup.GET("/check-session/:serial", handler.CheckSession)
+	proctorGroup.GET("/participant-sessions/:serial/check", handler.CheckSession)
+	proctorGroup.POST("/participant-sessions/:serial/authorize", handler.AuthorizeSession)
 
 	router.Run(fmt.Sprintf(":%d", cfg.RESTPort))
 }

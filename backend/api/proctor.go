@@ -21,6 +21,10 @@ type CheckSessionResponse struct {
 	Exam        *ExamData        `json:"exam"`
 }
 
+type AuthorizeSessionRequest struct {
+	AllowedDurationMinutes uint `json:"allowed_duration_minutes" binding:"required"`
+}
+
 /***
 	handler
 ***/
@@ -134,7 +138,28 @@ func (h *handler) CheckSession(c *gin.Context) {
 }
 
 func (h *handler) AuthorizeSession(c *gin.Context) {
-	// TODO: authorize session as proctor
+	// authorize session as proctor
+	var req AuthorizeSessionRequest
+
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrFailedToParseRequest.Error(),
+		})
+		return
+	}
+
+	// TODO: validation, but it seems like even if an invalid session is authorized, it won't affect anything because it's being validated in other endpoints
+	err := h.participantSessionService.AuthorizeSession(c.Param(constants.Serial), req.AllowedDurationMinutes)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: constants.Success,
+			Data:    err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, lib.BaseResponse{
+		Message: constants.Success,
+	})
 }
 
 /***

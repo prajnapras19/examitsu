@@ -9,6 +9,7 @@ import (
 
 	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/participant"
 	redis "github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
@@ -21,20 +22,23 @@ type Repository interface {
 }
 
 type repository struct {
-	cfg   *config.Config
-	db    *gorm.DB
-	cache *redis.Client
+	cfg                   *config.Config
+	db                    *gorm.DB
+	cache                 *redis.Client
+	participantRepository participant.Repository
 }
 
 func NewRepository(
 	cfg *config.Config,
 	db *gorm.DB,
 	cache *redis.Client,
+	participantRepository participant.Repository,
 ) Repository {
 	return &repository{
-		cfg:   cfg,
-		db:    db,
-		cache: cache,
+		cfg:                   cfg,
+		db:                    db,
+		cache:                 cache,
+		participantRepository: participantRepository,
 	}
 }
 
@@ -97,24 +101,25 @@ func (r *repository) AuthorizeSession(serial string, durationMinutes uint) error
 			return err
 		}
 	}
+	currentParticipant, err := r.participantRepository.GetParticipantByID(currentData.ParticipantID)
 
 	// if there is no authorized session previously, then this function should update participant's start time and duration
 	_, err = r.GetLatestAuthorizedParticipantSessionByParticipantID(currentData.ParticipantID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return lib.ErrFailedToGetParticipantSession
+		if errors.Is(err, lib.ErrParticipantSessionNotFound) {
+			startExam = true
 		} else {
 			return err
 		}
 	}
 
 	err = r.db.Transaction(func(tx *gorm.DB) error {
-		err := tx.Model(&ParticipantSession{}).Update("is_authorized", true).Error
+		err := tx.Model(&ParticipantSession{}).Where("serial = ?", serial).Update("is_authorized", true).Error
 		if err != nil {
 			return err
 		}
 		if startExam {
-			return tx.Table("participants").Where("id = ?", currentData.ParticipantID).Updates(
+			err = tx.Table("participants").Where("id = ?", currentData.ParticipantID).Updates(
 				map[string]interface{}{
 					"started_at":               time.Now(),
 					"allowed_duration_minutes": durationMinutes,
@@ -126,6 +131,8 @@ func (r *repository) AuthorizeSession(serial string, durationMinutes uint) error
 	if err == nil {
 		r.cache.Del(context.Background(), r.GetParticipantSessionBySerialCacheKey(currentData.Serial))
 		r.cache.Del(context.Background(), r.GetLatestAuthorizedParticipantSessionByParticipantIDCacheKey(currentData.ParticipantID))
+		r.cache.Del(context.Background(), r.participantRepository.GetParticipantByIDCacheKey(currentParticipant.ID))
+		r.cache.Del(context.Background(), r.participantRepository.GetParticipantByExamIDAndNameCacheKey(currentParticipant.ExamID, currentParticipant.Name))
 	}
 	return err
 }
