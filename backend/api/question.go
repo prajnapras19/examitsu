@@ -294,6 +294,13 @@ func (h *handler) GetQuestionsIDByExamSerial(c *gin.Context) {
 		return
 	}
 
+	if !exam.IsOpen {
+		c.JSON(http.StatusNotFound, lib.BaseResponse{
+			Message: lib.ErrExamNotFound.Error(),
+		})
+		return
+	}
+
 	participantSession, err := h.participantSessionService.GetLatestAuthorizedParticipantSessionByParticipantID(participant.ID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, lib.BaseResponse{
@@ -383,6 +390,13 @@ func (h *handler) GetQuestionWithOptions(c *gin.Context) {
 	if participant.ExamID != exam.ID {
 		c.JSON(http.StatusUnauthorized, lib.BaseResponse{
 			Message: lib.ErrUnauthorizedRequest.Error(),
+		})
+		return
+	}
+
+	if !exam.IsOpen {
+		c.JSON(http.StatusNotFound, lib.BaseResponse{
+			Message: lib.ErrExamNotFound.Error(),
 		})
 		return
 	}
@@ -519,6 +533,13 @@ func (h *handler) SubmitAnswer(c *gin.Context) {
 	if participant.ExamID != exam.ID {
 		c.JSON(http.StatusUnauthorized, lib.BaseResponse{
 			Message: lib.ErrUnauthorizedRequest.Error(),
+		})
+		return
+	}
+
+	if !exam.IsOpen {
+		c.JSON(http.StatusNotFound, lib.BaseResponse{
+			Message: lib.ErrExamNotFound.Error(),
 		})
 		return
 	}

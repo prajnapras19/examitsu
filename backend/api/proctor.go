@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
@@ -12,6 +13,13 @@ import (
 /***
 	entity
 ***/
+
+type CheckSessionResponse struct {
+	IsStartExam bool             `json:"is_start_exam"`
+	IsSubmitted bool             `json:"is_submitted"`
+	Participant *ParticipantData `json:"participant"`
+	Exam        *ExamData        `json:"exam"`
+}
 
 /***
 	handler
@@ -56,7 +64,73 @@ func (h *handler) IsLoggedInAsProctor(c *gin.Context) {
 }
 
 func (h *handler) CheckSession(c *gin.Context) {
-	// TODO: return data need to be seen by proctor to be able to authorize session
+	// return data need to be seen by proctor to be able to authorize session
+
+	participantSession, err := h.participantSessionService.GetParticipantSessionBySerial(c.Param(constants.Serial))
+	if err != nil {
+		if errors.Is(err, lib.ErrParticipantSessionNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	res := &CheckSessionResponse{}
+
+	participant, err := h.participantService.GetParticipantByID(participantSession.ParticipantID)
+	if err != nil {
+		if errors.Is(err, lib.ErrParticipantNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	if participant.StartedAt == nil {
+		res.IsStartExam = true
+	} else {
+		if participant.EndedAt != nil || participant.StartedAt.Add(time.Duration(participant.AllowedDurationMinutes)*time.Minute).Before(time.Now()) {
+			res.IsSubmitted = true
+		}
+	}
+	res.Participant = h.MapParticipantEntityToParticipantData(participant)
+
+	exam, err := h.examService.GetExamByID(participant.ExamID)
+	if err != nil {
+		if errors.Is(err, lib.ErrExamNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	if !exam.IsOpen {
+		if !exam.IsOpen {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: lib.ErrExamNotFound.Error(),
+			})
+			return
+		}
+	}
+	res.Exam = h.MapExamEntityToExamData(exam)
+
+	c.JSON(http.StatusOK, lib.BaseResponse{
+		Message: constants.Success,
+		Data:    res,
+	})
 }
 
 func (h *handler) AuthorizeSession(c *gin.Context) {

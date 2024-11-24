@@ -306,7 +306,7 @@ func (h *handler) SubmitExam(c *gin.Context) {
 		return
 	}
 
-	if participant.EndedAt != nil {
+	if participant.EndedAt != nil || participant.StartedAt.Add(time.Duration(participant.AllowedDurationMinutes)*time.Minute).Before(time.Now()) {
 		c.JSON(http.StatusBadRequest, lib.BaseResponse{
 			Message: lib.ErrExamAlreadySubmitted.Error(),
 		})
@@ -361,7 +361,7 @@ func (h *handler) SubmitExam(c *gin.Context) {
 }
 
 func (h *handler) IsSessionAuthorized(c *gin.Context) {
-	// TODO: return success, 404, 401, or 500 depending on if the request exam token session serial is authorized or not
+	// return success, 404, 401, or 500 depending on if the request exam token session serial is authorized or not
 	jwtClaims, err := lib.GetExamTokenJWTClaimsFromContext(c)
 	if err != nil {
 		log.Printf("[handler][participant][IsSessionAuthorized] error when get jwt: %s", err.Error())

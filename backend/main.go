@@ -131,6 +131,7 @@ func initDefault(cfg *config.Config) {
 	proctorGroup.POST("/login", handler.LoginProctor)
 	proctorGroup.Use(api.JWTProctorMiddleware(adminAuthService))
 	proctorGroup.GET("/is-logged-in", handler.IsLoggedInAsProctor)
+	proctorGroup.GET("/check-session/:serial", handler.CheckSession)
 
 	router.Run(fmt.Sprintf(":%d", cfg.RESTPort))
 }
