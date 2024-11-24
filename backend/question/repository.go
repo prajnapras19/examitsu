@@ -117,15 +117,18 @@ func (r *repository) UpdateQuestionDataByID(question *Question) error {
 		return err
 	}
 
-	r.cache.Del(context.Background(), r.GetQuestionByIDCacheKey(currentData.ID))
-	r.cache.Del(context.Background(), r.GetQuestionsIDByExamIDCacheKey(currentData.ExamID))
-
-	return r.db.Transaction(func(tx *gorm.DB) error {
+	err = r.db.Transaction(func(tx *gorm.DB) error {
 		return tx.Model(&Question{}).
 			Where("id = ?", question.ID).
 			Update("data", question.Data).
 			Error
 	})
+
+	if err == nil {
+		r.cache.Del(context.Background(), r.GetQuestionByIDCacheKey(currentData.ID))
+		r.cache.Del(context.Background(), r.GetQuestionsIDByExamIDCacheKey(currentData.ExamID))
+	}
+	return err
 }
 
 func (r *repository) DeleteQuestionByID(id uint) error {
@@ -133,9 +136,6 @@ func (r *repository) DeleteQuestionByID(id uint) error {
 	if err != nil {
 		return err
 	}
-
-	r.cache.Del(context.Background(), r.GetQuestionByIDCacheKey(currentData.ID))
-	r.cache.Del(context.Background(), r.GetQuestionsIDByExamIDCacheKey(currentData.ExamID))
 
 	res := r.db.Model(&Question{}).Where("id = ?", id).Delete(&Question{})
 	if res.Error != nil {
@@ -145,6 +145,10 @@ func (r *repository) DeleteQuestionByID(id uint) error {
 		log.Printf("[question][repository][DeleteQuestionByID] error: %s", res.Error)
 		return lib.ErrQuestionNotFound
 	}
+
+	r.cache.Del(context.Background(), r.GetQuestionByIDCacheKey(currentData.ID))
+	r.cache.Del(context.Background(), r.GetQuestionsIDByExamIDCacheKey(currentData.ExamID))
+
 	return nil
 }
 

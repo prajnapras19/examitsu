@@ -101,10 +101,7 @@ func (r *repository) UpdateExam(exam *Exam) error {
 		return err
 	}
 
-	r.cache.Del(context.Background(), r.GetExamByIDCacheKey(currentData.ID))
-	r.cache.Del(context.Background(), r.GetExamBySerialCacheKey(currentData.Serial))
-
-	return r.db.Transaction(func(tx *gorm.DB) error {
+	err = r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Model(&Exam{}).
 			Where("serial = ?", exam.Serial).
 			Update("name", exam.Name).
@@ -142,13 +139,22 @@ func (r *repository) UpdateExam(exam *Exam) error {
 			return nil
 		}
 
-		for i := range hangingParticipants {
-			r.cache.Del(context.Background(), r.GetParticipantByIDCacheKey(hangingParticipants[i].ID))
-			r.cache.Del(context.Background(), r.GetParticipantByExamIDAndNameCacheKey(updatedExam.ID, hangingParticipants[i].Name))
+		err = r.db.Model(&Participant{}).Where("started_at IS NOT NULL AND ended_at IS NULL").Update("ended_at", updatedExam.UpdatedAt).Error
+
+		if err == nil {
+			for i := range hangingParticipants {
+				r.cache.Del(context.Background(), r.GetParticipantByIDCacheKey(hangingParticipants[i].ID))
+				r.cache.Del(context.Background(), r.GetParticipantByExamIDAndNameCacheKey(updatedExam.ID, hangingParticipants[i].Name))
+			}
 		}
 
-		return r.db.Model(&Participant{}).Where("started_at IS NOT NULL AND ended_at IS NULL").Update("ended_at", updatedExam.UpdatedAt).Error
+		return err
 	})
+	if err == nil {
+		r.cache.Del(context.Background(), r.GetExamByIDCacheKey(currentData.ID))
+		r.cache.Del(context.Background(), r.GetExamBySerialCacheKey(currentData.Serial))
+	}
+	return err
 }
 
 func (r *repository) DeleteExamBySerial(serial string) error {
@@ -156,9 +162,6 @@ func (r *repository) DeleteExamBySerial(serial string) error {
 	if err != nil {
 		return err
 	}
-
-	r.cache.Del(context.Background(), r.GetExamByIDCacheKey(currentData.ID))
-	r.cache.Del(context.Background(), r.GetExamBySerialCacheKey(currentData.Serial))
 
 	res := r.db.Model(&Exam{}).Where("serial = ?", serial).Delete(&Exam{})
 	if res.Error != nil {
@@ -168,6 +171,10 @@ func (r *repository) DeleteExamBySerial(serial string) error {
 		log.Printf("[exam][repository][DeleteExamBySerial] error: %s", res.Error)
 		return lib.ErrExamNotFound
 	}
+
+	r.cache.Del(context.Background(), r.GetExamByIDCacheKey(currentData.ID))
+	r.cache.Del(context.Background(), r.GetExamBySerialCacheKey(currentData.Serial))
+
 	return nil
 }
 

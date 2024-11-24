@@ -109,9 +109,6 @@ func (r *repository) UpdateParticipant(participant *Participant) error {
 		return err
 	}
 
-	r.cache.Del(context.Background(), r.GetParticipantByIDCacheKey(currentData.ID))
-	r.cache.Del(context.Background(), r.GetParticipantByExamIDAndNameCacheKey(currentData.ExamID, currentData.Name))
-
 	res := r.db.Updates(participant)
 	if res.Error != nil {
 		return res.Error
@@ -120,6 +117,10 @@ func (r *repository) UpdateParticipant(participant *Participant) error {
 		log.Printf("[mcqoption][repository][UpdateParticipant] error: %s", res.Error)
 		return lib.ErrParticipantNotFound
 	}
+
+	r.cache.Del(context.Background(), r.GetParticipantByIDCacheKey(currentData.ID))
+	r.cache.Del(context.Background(), r.GetParticipantByExamIDAndNameCacheKey(currentData.ExamID, currentData.Name))
+
 	return nil
 }
 
@@ -129,9 +130,6 @@ func (r *repository) DeleteParticipantByID(id uint) error {
 		return err
 	}
 
-	r.cache.Del(context.Background(), r.GetParticipantByIDCacheKey(currentData.ID))
-	r.cache.Del(context.Background(), r.GetParticipantByExamIDAndNameCacheKey(currentData.ExamID, currentData.Name))
-
 	res := r.db.Model(&Participant{}).Where("id = ?", id).Delete(&Participant{})
 	if res.Error != nil {
 		return res.Error
@@ -140,6 +138,10 @@ func (r *repository) DeleteParticipantByID(id uint) error {
 		log.Printf("[mcqoption][repository][DeleteParticipantByID] error: %s", res.Error)
 		return lib.ErrParticipantNotFound
 	}
+
+	r.cache.Del(context.Background(), r.GetParticipantByIDCacheKey(currentData.ID))
+	r.cache.Del(context.Background(), r.GetParticipantByExamIDAndNameCacheKey(currentData.ExamID, currentData.Name))
+
 	return nil
 }
 

@@ -98,9 +98,6 @@ func (r *repository) AuthorizeSession(serial string, durationMinutes uint) error
 		}
 	}
 
-	r.cache.Del(context.Background(), r.GetParticipantSessionBySerialCacheKey(currentData.Serial))
-	r.cache.Del(context.Background(), r.GetLatestAuthorizedParticipantSessionByParticipantIDCacheKey(currentData.ParticipantID))
-
 	// if there is no authorized session previously, then this function should update participant's start time and duration
 	_, err = r.GetLatestAuthorizedParticipantSessionByParticipantID(currentData.ParticipantID)
 	if err != nil {
@@ -111,7 +108,7 @@ func (r *repository) AuthorizeSession(serial string, durationMinutes uint) error
 		}
 	}
 
-	return r.db.Transaction(func(tx *gorm.DB) error {
+	err = r.db.Transaction(func(tx *gorm.DB) error {
 		err := tx.Model(&ParticipantSession{}).Update("is_authorized", true).Error
 		if err != nil {
 			return err
@@ -125,6 +122,12 @@ func (r *repository) AuthorizeSession(serial string, durationMinutes uint) error
 		}
 		return nil
 	})
+
+	if err == nil {
+		r.cache.Del(context.Background(), r.GetParticipantSessionBySerialCacheKey(currentData.Serial))
+		r.cache.Del(context.Background(), r.GetLatestAuthorizedParticipantSessionByParticipantIDCacheKey(currentData.ParticipantID))
+	}
+	return err
 }
 
 func (r *repository) GetParticipantSessionBySerialCacheKey(serial string) string {

@@ -96,9 +96,6 @@ func (r *repository) UpdateMcqOption(mcqOption *McqOption) error {
 		return err
 	}
 
-	r.cache.Del(context.Background(), r.GetMcqOptionByIDCacheKey(currentData.ID))
-	r.cache.Del(context.Background(), r.GetMcqOptionByQuestionIDCacheKey(currentData.QuestionID))
-
 	res := r.db.Updates(mcqOption)
 	if res.Error != nil {
 		return res.Error
@@ -107,6 +104,10 @@ func (r *repository) UpdateMcqOption(mcqOption *McqOption) error {
 		log.Printf("[mcqoption][repository][UpdateMcqOption] error: %s", res.Error)
 		return lib.ErrMcqOptionNotFound
 	}
+
+	r.cache.Del(context.Background(), r.GetMcqOptionByIDCacheKey(currentData.ID))
+	r.cache.Del(context.Background(), r.GetMcqOptionByQuestionIDCacheKey(currentData.QuestionID))
+
 	return nil
 }
 
@@ -116,9 +117,6 @@ func (r *repository) DeleteMcqOptionByID(id uint) error {
 		return err
 	}
 
-	r.cache.Del(context.Background(), r.GetMcqOptionByIDCacheKey(currentData.ID))
-	r.cache.Del(context.Background(), r.GetMcqOptionByQuestionIDCacheKey(currentData.QuestionID))
-
 	res := r.db.Model(&McqOption{}).Where("id = ?", id).Delete(&McqOption{})
 	if res.Error != nil {
 		return res.Error
@@ -127,6 +125,10 @@ func (r *repository) DeleteMcqOptionByID(id uint) error {
 		log.Printf("[mcqoption][repository][DeleteMcqOptionByID] error: %s", res.Error)
 		return lib.ErrMcqOptionNotFound
 	}
+
+	r.cache.Del(context.Background(), r.GetMcqOptionByIDCacheKey(currentData.ID))
+	r.cache.Del(context.Background(), r.GetMcqOptionByQuestionIDCacheKey(currentData.QuestionID))
+
 	return nil
 }
 
