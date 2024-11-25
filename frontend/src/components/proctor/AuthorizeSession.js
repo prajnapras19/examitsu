@@ -3,11 +3,27 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Container, Spinner, Button } from 'react-bootstrap';
+import QrScanner from 'react-qr-scanner';
 
 const AuthorizeSession = (props) => {
   const { auth } = props;
   const navigate = useNavigate();
-  const [error, setError] = useState(null);
+  const [scanning, setScanning] = useState(false);
+  const [scannedData, setScannedData] = useState("");
+
+  const handleScan = (data) => {
+    if (data) {
+      setScannedData(data.text); // Save the scanned data
+      setScanning(false);       // Pause scanning
+      // Perform your desired action here
+      console.log("Scanned Data:", data.text);
+    }
+  };
+
+  const resumeScanning = () => {
+    setScanning(true);
+    setScannedData("");
+  };
   
   useEffect(() => {
     if (auth.loading) {
@@ -27,17 +43,25 @@ const AuthorizeSession = (props) => {
     );
   }
 
-  if (error) {
-    navigate('/500');
-  }
-
   return (
     <Container>
       <h1 className="my-4">Izinkan Ujian</h1>
       <hr/>
 
-
-      <p>TODO</p>
+      <Container className='mt-5 text-center'>
+        {scanning ? (
+          <QrScanner
+            delay={300}
+            style={{ width: "30%" }}
+            onScan={handleScan}
+          />
+        ) : (
+          <div>
+            <h2>Scanned Data: {scannedData}</h2>
+            <button onClick={resumeScanning}>Scan Again</button>
+          </div>
+        )}
+      </Container>
     </Container>
   );
 }
