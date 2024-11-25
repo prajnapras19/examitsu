@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
 	redis "github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -45,13 +46,18 @@ func (r *repository) GetSubmissionByParticipantIDAndQuestionID(participantID uin
 
 	val, err := r.cache.Get(context.Background(), cacheKey).Result()
 	if err == nil {
-		json.Unmarshal([]byte(val), &submission)
-		return &submission, nil
+		if string(val) != constants.None {
+			json.Unmarshal([]byte(val), &submission)
+			return &submission, nil
+		} else {
+			return nil, lib.ErrSubmissionNotFound
+		}
 	}
 
 	err = r.db.Where("participant_id = ? AND question_id = ? AND not_archived", participantID, questionID).First(&submission).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			r.cache.Set(context.Background(), cacheKey, []byte(constants.None), r.cfg.CacheTTL)
 			return nil, lib.ErrSubmissionNotFound
 		}
 		return nil, err

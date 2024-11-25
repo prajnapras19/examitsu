@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/prajnapras19/project-form-exam-sman2/backend/config"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/participant"
 	redis "github.com/redis/go-redis/v9"
@@ -75,13 +76,18 @@ func (r *repository) GetLatestAuthorizedParticipantSessionByParticipantID(partic
 	cacheKey := r.GetLatestAuthorizedParticipantSessionByParticipantIDCacheKey(participantID)
 	val, err := r.cache.Get(context.Background(), cacheKey).Result()
 	if err == nil {
-		json.Unmarshal([]byte(val), &participantSession)
-		return &participantSession, nil
+		if string(val) != constants.None {
+			json.Unmarshal([]byte(val), &participantSession)
+			return &participantSession, nil
+		} else {
+			return nil, lib.ErrParticipantSessionNotFound
+		}
 	}
 
 	err = r.db.Where("participant_id = ? AND is_authorized AND not_archived", participantID).Order("updated_at DESC").First(&participantSession).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			r.cache.Set(context.Background(), cacheKey, []byte(constants.None), r.cfg.CacheTTL)
 			return nil, lib.ErrParticipantSessionNotFound
 		}
 		return nil, err
