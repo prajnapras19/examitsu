@@ -229,29 +229,8 @@ func (h *handler) GetExamTemplate(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode Base64 content"})
 		return
 	}
-	buf := new(bytes.Buffer)
-	zipWriter := zip.NewWriter(buf)
-
-	fileName := example.ExamZipExampleFilename
-	fileWriter, err := zipWriter.Create(fileName)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
-			Message: "Failed to create file in ZIP",
-		})
-		return
-	}
-	_, err = fileWriter.Write(fileContent)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
-			Message: "Failed to write to ZIP file",
-		})
-	}
-	if err := zipWriter.Close(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to close ZIP writer"})
-		return
-	}
 	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", example.ExamZipExampleFilename))
-	c.Data(http.StatusOK, "application/zip", buf.Bytes())
+	c.Data(http.StatusOK, "application/zip", fileContent)
 }
 
 func (h *handler) UploadExam(c *gin.Context) {
