@@ -26,7 +26,7 @@ const EditParticipant = (props) => {
       defaultValue: ''
     },
     {
-      label: 'Durasi Maksimal Pengerjaan yang Diperbolehkan Ini (dalam satuan menit)',
+      label: 'Durasi Maksimal Pengerjaan yang Diperbolehkan (dalam satuan menit)',
       name: 'allowed_duration_minutes',
       placeholder: 'Masukkan durasi pengerjaan yang diperbolehkan untuk peserta ini',
       type: 'float',
