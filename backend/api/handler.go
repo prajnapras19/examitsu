@@ -25,6 +25,7 @@ type Handler interface {
 	GetOpenedExam(*gin.Context)
 	GetAllOpenedExams(*gin.Context)
 	GetExamTemplate(*gin.Context)
+	UploadExam(*gin.Context)
 
 	CreateQuestion(*gin.Context)
 	GetUploadQuestionBlobURL(*gin.Context)
