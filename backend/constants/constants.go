@@ -16,6 +16,7 @@ const (
 	ExamID      = "exam_id"
 	OrderNumber = "order_number"
 	None        = "NONE"
+	File        = "file"
 
 	QueryParameterPage                 = "page"
 	DefaultValueQueryParameterPage     = "1"
@@ -31,4 +32,9 @@ const (
 	UpdateAnswerConsumerName                  = "updateAnswerConsumer"
 
 	DefaultRandomQuestionBlobFilenameLength = 64
+
+	UjianCSV   = "ujian.csv"
+	SoalCSV    = "soal.csv"
+	KunciCSV   = "kunci.csv"
+	PesertaCSV = "peserta.csv"
 )

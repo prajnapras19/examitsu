@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"bytes"
 	"encoding/base64"
-	"encoding/csv"
 	"errors"
 	"fmt"
 	"io"
@@ -226,7 +225,9 @@ func (h *handler) GetAllOpenedExams(c *gin.Context) {
 func (h *handler) GetExamTemplate(c *gin.Context) {
 	fileContent, err := base64.StdEncoding.DecodeString(example.ExamZipExample)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode Base64 content"})
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: lib.ErrFailedToDecodeContent.Error(),
+		})
 		return
 	}
 	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", example.ExamZipExampleFilename))
@@ -234,85 +235,101 @@ func (h *handler) GetExamTemplate(c *gin.Context) {
 }
 
 func (h *handler) UploadExam(c *gin.Context) {
-	// Retrieve the uploaded ZIP file
-	file, err := c.FormFile("file")
+	file, err := c.FormFile(constants.File)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, lib.BaseResponse{
-			Message: "Failed to get uploaded file",
+			Message: lib.ErrFailedToProcessUploadedFile.Error(),
 		})
 		return
 	}
 
-	// Open the uploaded file
 	uploadedFile, err := file.Open()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
-			Message: "Failed to get uploaded file",
+			Message: lib.ErrFailedToProcessUploadedFile.Error(),
 		})
 		return
 	}
 	defer uploadedFile.Close()
 
-	// Read the file into memory
 	buf := new(bytes.Buffer)
 	_, err = io.Copy(buf, uploadedFile)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
-			Message: "Failed to read file",
+			Message: lib.ErrFailedToProcessUploadedFile.Error(),
 		})
 		return
 	}
 
-	// Open the ZIP archive
 	zipReader, err := zip.NewReader(bytes.NewReader(buf.Bytes()), file.Size)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, lib.BaseResponse{
-			Message: "Failed to read ZIP file",
+			Message: lib.ErrFailedToProcessUploadedFile.Error(),
 		})
 		return
 	}
 
-	// Process each file in the ZIP archive
-	for _, zipFile := range zipReader.File {
-		log.Printf("Processing file: %s\n", zipFile.Name)
+	fileMap := map[string]*zip.File{}
 
-		// Check if the file is a CSV
-		if !isCSV(zipFile.Name) {
-			log.Printf("Skipping non-CSV file: %s\n", zipFile.Name)
-			continue
-		}
-
-		// Open the CSV file
-		fileInZip, err := zipFile.Open()
-		if err != nil {
-			log.Printf("Error opening file %s: %v\n", zipFile.Name, err)
-			continue
-		}
-		defer fileInZip.Close()
-
-		// Read and print the contents of the CSV file
-		reader := csv.NewReader(fileInZip)
-		for {
-			record, err := reader.Read()
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				log.Printf("Error reading CSV file %s: %v\n", zipFile.Name, err)
-				break
-			}
-			log.Printf("Record from %s: %v\n", zipFile.Name, record)
-		}
+	for _, f := range zipReader.File {
+		fileMap[f.Name] = f
 	}
+
+	examFile, ok := fileMap[constants.UjianCSV]
+	if !ok {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrFailedToProcessUploadedFile.Error(),
+		})
+		return
+	}
+
+	questionsFile, ok := fileMap[constants.SoalCSV]
+	if !ok {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrFailedToProcessUploadedFile.Error(),
+		})
+		return
+	}
+
+	mcqOptionsFile, ok := fileMap[constants.KunciCSV]
+	if !ok {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrFailedToProcessUploadedFile.Error(),
+		})
+		return
+	}
+
+	participantsFile, ok := fileMap[constants.KunciCSV]
+	if !ok {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrFailedToProcessUploadedFile.Error(),
+		})
+		return
+	}
+
+	openedExamFile, err := examFile.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: lib.ErrFailedToProcessUploadedFile.Error(),
+		})
+		return
+	}
+	defer openedExamFile.Close()
+
+	examFileHeader, examFileContent, err := lib.ReadCSV(openedExamFile)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	log.Println("examFileHeader", examFileHeader)
+	log.Println("examFileContent", examFileContent)
 
 	c.JSON(http.StatusOK, lib.BaseResponse{
 		Message: constants.Success,
 	})
-}
-
-func isCSV(filename string) bool {
-	// Check if the file has a .csv extension
-	return len(filename) > 4 && filename[len(filename)-4:] == ".csv"
 }
 
 /***

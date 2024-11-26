@@ -4,9 +4,11 @@ import "errors"
 
 var (
 	// handler
-	ErrFailedToParseRequest   = errors.New("failed to parse request")
-	ErrUnknownError           = errors.New("unknown error")
-	ErrInsufficientPermission = errors.New("insufficient permission")
+	ErrFailedToParseRequest        = errors.New("failed to parse request")
+	ErrUnknownError                = errors.New("unknown error")
+	ErrInsufficientPermission      = errors.New("insufficient permission")
+	ErrFailedToDecodeContent       = errors.New("failed to decode content")
+	ErrFailedToProcessUploadedFile = errors.New("failed to process uploaded file")
 
 	// handler.participant
 	ErrExamAlreadySubmitted = errors.New("exam already submitted")
@@ -20,6 +22,9 @@ var (
 
 	// lib.random
 	ErrFailedToGenerateRandomString = errors.New("failed to generate random string")
+
+	// lib.csv
+	ErrCSVRecordNotMatchedWithHeader = errors.New("csv record not matched with header")
 
 	// adminauth.service
 	ErrIncorrectPassword    = errors.New("incorrect password")
