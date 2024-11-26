@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import { Container, Modal, Spinner, Button, Form } from "react-bootstrap";
 import Timer from "../participant/Timer";
+import { toast } from 'react-toastify';
 
 const AuthorizeSessionModal = (props) => {
   const NOT_STARTED = 0;
@@ -35,15 +36,18 @@ const AuthorizeSessionModal = (props) => {
       return;
     }
     setLoading(true);
+    setError(null);
+    setData(null);
+    setState(NOT_STARTED);
+
     axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/v1/proctor/participant-sessions/${examSession}/check`, {
       headers: {
         'Authorization': `Bearer ${auth.token}`
       },
     })
     .then(response => {
-      setLoading(false);
       setData(response.data.data);
-      if (response.data.data.participant.is_submitted) {
+      if (response.data.data.is_submitted) {
         setState(ALREADY_FINISHED);
       }
       else if (response.data.data.participant.started_at) {
@@ -51,6 +55,7 @@ const AuthorizeSessionModal = (props) => {
       } else {
         setState(NOT_STARTED);
       }
+      setLoading(false);
     })
     .catch(err => {
       if (err.status === 500) {
@@ -63,9 +68,36 @@ const AuthorizeSessionModal = (props) => {
   }, [examSession]);
 
   const handleAuthorize = () => {
-    console.log('TODO');
-    console.log(formData);
-    handleClose();
+    setLoading(true);
+    axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/proctor/participant-sessions/${examSession}/authorize`, {
+      allowed_duration_minutes: formData.allowed_duration_minutes,
+    }, {
+      headers: {
+        'Authorization': `Bearer ${auth.token}`
+      },
+    })
+    .then(response => {
+      toast.success('Sesi berhasil diizinkan!', {
+        position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      handleClose();
+    })
+    .catch(err => {
+      toast.error(`Sedang terjadi masalah pada server. Silakan coba beberapa saat lagi.`, {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      handleClose();
+    })
   }
 
   const handleInputChange = (e) => {
@@ -214,7 +246,7 @@ const AuthorizeSessionModal = (props) => {
         <Button variant="danger" onClick={handleClose}>
           Batal
         </Button>
-        <Button variant="primary" onClick={handleAuthorize} disabled={state === ALREADY_FINISHED}>
+        <Button variant="primary" onClick={handleAuthorize} disabled={loading || error || (state === ALREADY_FINISHED)}>
           Izinkan
         </Button>
       </Modal.Footer>
