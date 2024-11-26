@@ -297,25 +297,22 @@ const ExamSession = () => {
             handleClose={handleCloseSubmitModal}
             handleSubmit={handleSubmit}
           />
-          <Container className="mt-5 text-center prevent-select change-page-button-group">
-            <Container>
-              <Button
-                variant="primary"
-                onClick={() => handleChooseQuestion(currentQuestionNumber - 1)}
-                disabled={currentQuestionNumber === 1 || disableChangeQuestion}
-              >
-                &lt;&lt; Soal sebelumnya
-              </Button>
-            </Container>
-            <Container>
-              <Button
-                variant="primary"
-                onClick={() => handleChooseQuestion(currentQuestionNumber + 1)}
-                disabled={currentQuestionNumber === questionIDList.length || disableChangeQuestion}
-              >
-                Soal selanjutnya &gt;&gt;
-              </Button>
-            </Container>
+          <Container className="d-flex mt-3 prevent-select">
+            <Button
+              className="me-3"
+              variant="primary"
+              onClick={() => handleChooseQuestion(currentQuestionNumber - 1)}
+              disabled={currentQuestionNumber === 1 || disableChangeQuestion}
+            >
+              &lt;&lt; Soal sebelumnya
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => handleChooseQuestion(currentQuestionNumber + 1)}
+              disabled={currentQuestionNumber === questionIDList.length || disableChangeQuestion}
+            >
+              Soal selanjutnya &gt;&gt;
+            </Button>
           </Container>
         </>
       )
