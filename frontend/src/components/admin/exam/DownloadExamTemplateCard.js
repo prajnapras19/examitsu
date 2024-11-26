@@ -21,7 +21,7 @@ const DownloadExamTemplateCard = ({auth}) => {
         ? contentDisposition
             .split("filename=")[1]
             .replace(/["']/g, "") // Remove any quotes around the filename
-        : "contoh_120.zip";
+        : "example.zip";
 
       const link = document.createElement("a");
       link.download = fileName;
