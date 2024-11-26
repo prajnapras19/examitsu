@@ -1,13 +1,18 @@
 package api
 
 import (
+	"archive/zip"
+	"bytes"
+	"encoding/base64"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/exam"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/example"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
 )
 
@@ -214,6 +219,37 @@ func (h *handler) GetAllOpenedExams(c *gin.Context) {
 		Message: constants.Success,
 		Data:    res,
 	})
+}
+
+func (h *handler) GetExamTemplate(c *gin.Context) {
+	fileContent, err := base64.StdEncoding.DecodeString(example.ExamZipExample)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode Base64 content"})
+		return
+	}
+	buf := new(bytes.Buffer)
+	zipWriter := zip.NewWriter(buf)
+
+	fileName := example.ExamZipExampleFilename
+	fileWriter, err := zipWriter.Create(fileName)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: "Failed to create file in ZIP",
+		})
+		return
+	}
+	_, err = fileWriter.Write(fileContent)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: "Failed to write to ZIP file",
+		})
+	}
+	if err := zipWriter.Close(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to close ZIP writer"})
+		return
+	}
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", example.ExamZipExampleFilename))
+	c.Data(http.StatusOK, "application/zip", buf.Bytes())
 }
 
 /***

@@ -6,6 +6,7 @@ import { Container, Spinner, Table, Button } from 'react-bootstrap';
 import BackToHomepageCard from '../home/BackToHomepageCard';
 import AddExamCard from './AddExamCard';
 import DeleteConfirmationModal from '../../etc/DeleteConfirmationModal';
+import DownloadExamTemplateCard from './DownloadExamTemplateCard';
 
 const ReadExams = (props) => {
   const { auth } = props;
@@ -129,6 +130,7 @@ const ReadExams = (props) => {
         <Container className="card-grid">
           <BackToHomepageCard></BackToHomepageCard>
           <AddExamCard></AddExamCard>
+          <DownloadExamTemplateCard auth={auth}></DownloadExamTemplateCard>
         </Container>
       </Container>
       <hr/>

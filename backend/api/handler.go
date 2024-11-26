@@ -24,6 +24,7 @@ type Handler interface {
 	DeleteExamBySerial(*gin.Context)
 	GetOpenedExam(*gin.Context)
 	GetAllOpenedExams(*gin.Context)
+	GetExamTemplate(*gin.Context)
 
 	CreateQuestion(*gin.Context)
 	GetUploadQuestionBlobURL(*gin.Context)

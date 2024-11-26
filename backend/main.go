@@ -96,6 +96,7 @@ func initDefault(cfg *config.Config) {
 	adminGroup.POST("/exams/:serial", handler.GetExamBySerial)
 	adminGroup.PATCH("/exams/:serial", handler.UpdateExam)
 	adminGroup.DELETE("/exams/:serial", handler.DeleteExamBySerial)
+	adminGroup.GET("/exams/template", handler.GetExamTemplate)
 
 	adminGroup.PUT("/questions", handler.CreateQuestion)
 	adminGroup.POST("/questions/file-upload-url", handler.GetUploadQuestionBlobURL)
