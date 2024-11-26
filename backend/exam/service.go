@@ -13,6 +13,7 @@ type Service interface {
 	GetExamByID(id uint) (*Exam, error)
 	GetExamBySerial(serial string) (*Exam, error)
 	GetExams(pagination *lib.QueryPagination, filter *GetExamsFilter) ([]*Exam, error)
+	GetAllOpenedExams() ([]*Exam, error)
 	UpdateExam(exam *Exam) error
 	DeleteExamBySerial(serial string) error
 }
@@ -71,6 +72,15 @@ func (s *service) GetExams(pagination *lib.QueryPagination, filter *GetExamsFilt
 	res, err := s.examRepository.GetExams(pagination, filter)
 	if err != nil {
 		log.Println("[exam][service][GetExams] failed to get exams:", err.Error())
+		return nil, lib.ErrFailedToGetExams
+	}
+	return res, nil
+}
+
+func (s *service) GetAllOpenedExams() ([]*Exam, error) {
+	res, err := s.examRepository.GetAllOpenedExams()
+	if err != nil {
+		log.Println("[exam][service][GetAllOpenedExams] failed to get exams:", err.Error())
 		return nil, lib.ErrFailedToGetExams
 	}
 	return res, nil

@@ -6,7 +6,6 @@ import { Container, Spinner, Table, Button } from 'react-bootstrap';
 const GetAllOpenedExams = () => {
   const navigate = useNavigate();
 
-  const [currentPage, setCurrentPage] = useState(1);
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,7 +13,7 @@ const GetAllOpenedExams = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/v1/exams?page=${currentPage}`);
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/v1/exams`);
         setData(response.data.data);
         setLoading(false);
       } catch (err) {
@@ -25,7 +24,7 @@ const GetAllOpenedExams = () => {
     };
 
     fetchData();
-  }, [currentPage]);
+  }, []);
 
   if (loading) {
     return (
@@ -40,16 +39,6 @@ const GetAllOpenedExams = () => {
     navigate('/500');
   }
 
-  const handleNextPage = () => {
-    setCurrentPage(currentPage + 1);
-  };
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
   return (
     <Container>
       <h1 className="my-4">Daftar Ujian</h1>
@@ -57,11 +46,7 @@ const GetAllOpenedExams = () => {
 
       {data.length === 0 ? (
         <Container className="text-center mt-5">
-          {currentPage === 1 ? (
-            <i>Tidak ada data ditemukan.</i>  
-          ): (
-            <i>Tidak ada data ditemukan pada halaman ini. Silakan coba halaman sebelumnya.</i>
-          )}
+          <i>Tidak ada data ditemukan.</i>
         </Container>
       ) : (
         <Table striped bordered hover className="text-center mt-5">
@@ -85,14 +70,6 @@ const GetAllOpenedExams = () => {
           </tbody>
         </Table>
       )}
-      <Container className="d-flex mt-3">
-        <Button variant="primary" onClick={handlePreviousPage} disabled={currentPage === 1} className="me-3">
-          Halaman sebelumnya
-        </Button>
-        <Button variant="primary" onClick={handleNextPage} disabled={data.length === 0}>
-          Halaman berikutnya
-        </Button>
-      </Container>
     </Container>
   );
 }

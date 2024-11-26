@@ -18,6 +18,7 @@ type Repository interface {
 	GetExamByID(id uint) (*Exam, error)
 	GetExamBySerial(serial string) (*Exam, error)
 	GetExams(pagination *lib.QueryPagination, filter *GetExamsFilter) ([]*Exam, error)
+	GetAllOpenedExams() ([]*Exam, error)
 	UpdateExam(exam *Exam) error
 	DeleteExamBySerial(serial string) error
 }
@@ -42,6 +43,9 @@ func NewRepository(
 
 func (r *repository) CreateExam(exam *Exam) (*Exam, error) {
 	err := r.db.Create(exam).Error
+	if err == nil {
+		r.cache.Del(context.Background(), r.GetAllOpenedExamsCacheKey())
+	}
 	return exam, err
 }
 
@@ -93,6 +97,26 @@ func (r *repository) GetExams(pagination *lib.QueryPagination, filter *GetExamsF
 	var res []*Exam
 	err := r.db.Scopes(append(filter.Scope(), pagination.Scope())...).Find(&res).Error
 	return res, err
+}
+
+func (r *repository) GetAllOpenedExams() ([]*Exam, error) {
+	var exams []*Exam
+
+	cacheKey := r.GetAllOpenedExamsCacheKey()
+	val, err := r.cache.Get(context.Background(), cacheKey).Result()
+	if err == nil {
+		json.Unmarshal([]byte(val), &exams)
+		return exams, nil
+	}
+
+	err = r.db.Where("is_open").Find(&exams).Error
+	if err != nil {
+		return nil, err
+	}
+
+	res, _ := json.Marshal(exams)
+	r.cache.Set(context.Background(), cacheKey, res, r.cfg.CacheTTL)
+	return exams, nil
 }
 
 func (r *repository) UpdateExam(exam *Exam) error {
@@ -153,6 +177,7 @@ func (r *repository) UpdateExam(exam *Exam) error {
 	if err == nil {
 		r.cache.Del(context.Background(), r.GetExamByIDCacheKey(currentData.ID))
 		r.cache.Del(context.Background(), r.GetExamBySerialCacheKey(currentData.Serial))
+		r.cache.Del(context.Background(), r.GetAllOpenedExamsCacheKey())
 	}
 	return err
 }
@@ -174,6 +199,7 @@ func (r *repository) DeleteExamBySerial(serial string) error {
 
 	r.cache.Del(context.Background(), r.GetExamByIDCacheKey(currentData.ID))
 	r.cache.Del(context.Background(), r.GetExamBySerialCacheKey(currentData.Serial))
+	r.cache.Del(context.Background(), r.GetAllOpenedExamsCacheKey())
 
 	return nil
 }
@@ -192,4 +218,8 @@ func (r *repository) GetParticipantByIDCacheKey(id uint) string {
 
 func (r *repository) GetParticipantByExamIDAndNameCacheKey(examID uint, name string) string {
 	return fmt.Sprintf("participant:examID:%d:name:%s", examID, name)
+}
+
+func (r *repository) GetAllOpenedExamsCacheKey() string {
+	return "exam:allOpened"
 }

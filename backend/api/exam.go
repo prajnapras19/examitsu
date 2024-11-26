@@ -195,19 +195,7 @@ func (h *handler) GetOpenedExam(c *gin.Context) {
 }
 
 func (h *handler) GetAllOpenedExams(c *gin.Context) {
-	pagination, err := lib.GetQueryPaginationFromContext(c)
-	if err != nil {
-		log.Printf("[handler][exam][GetExams] get query pagination error: %s", err.Error())
-		c.JSON(http.StatusBadRequest, lib.BaseResponse{
-			Message: lib.ErrFailedToParseRequest.Error(),
-		})
-		return
-	}
-	svcRes, err := h.examService.GetExams(pagination, &exam.GetExamsFilter{
-		IsOpenEqualsTo: &lib.QueryFiltersEqualBool{
-			Value: true,
-		},
-	})
+	svcRes, err := h.examService.GetAllOpenedExams()
 	if err != nil {
 		if errors.Is(err, lib.ErrExamNotFound) {
 			c.JSON(http.StatusNotFound, lib.BaseResponse{
