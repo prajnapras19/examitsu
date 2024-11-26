@@ -1,25 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Container, Spinner, Button } from 'react-bootstrap';
 import QrScanner from 'react-qr-scanner';
+import AuthorizeSessionModal from './AuthorizeSessionModal';
 
 const AuthorizeSession = (props) => {
   const { auth } = props;
   const navigate = useNavigate();
   const [scanning, setScanning] = useState(false);
   const [scannedData, setScannedData] = useState("");
+  const [showModal, setShowModal] = useState(false);
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    resumeScanning();
+  };
 
   const handleScan = (data) => {
     if (data) {
-      setScannedData(data.text); // Save the scanned data
-      setScanning(false);       // Pause scanning
-      // Perform your desired action here
-      console.log("Scanned Data:", data.text);
+      setScannedData(data.text);
+      pauseScanning();
+      setShowModal(true);
     }
   };
 
+  const pauseScanning = () => {
+    setScanning(false);
+  }
   const resumeScanning = () => {
     setScanning(true);
     setScannedData("");
@@ -50,18 +58,30 @@ const AuthorizeSession = (props) => {
 
       <Container className='mt-5 text-center'>
         {scanning ? (
-          <QrScanner
-            delay={300}
-            style={{ width: "30%" }}
-            onScan={handleScan}
-          />
+          <Container>
+            <Container>
+              <Button variant='danger' onClick={pauseScanning}>Hentikan Pemindaian</Button>
+            </Container>
+            <Container className='mt-5'>
+              <QrScanner
+                delay={300}
+                style={{ width: "100%" }}
+                onScan={handleScan}
+              />
+            </Container>
+          </Container>
         ) : (
-          <div>
-            <h2>Scanned Data: {scannedData}</h2>
-            <button onClick={resumeScanning}>Scan Again</button>
-          </div>
+          <Container>
+            <Button onClick={resumeScanning}>Pindai Kode QR</Button>
+          </Container>
         )}
       </Container>
+      <AuthorizeSessionModal
+        show={showModal}
+        handleClose={handleCloseModal}
+        auth={auth}
+        examSession={scannedData}
+      />
     </Container>
   );
 }
