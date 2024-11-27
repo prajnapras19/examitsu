@@ -237,6 +237,7 @@ func (h *handler) GetExamTemplate(c *gin.Context) {
 func (h *handler) UploadExam(c *gin.Context) {
 	file, err := c.FormFile(constants.File)
 	if err != nil {
+		log.Println("[exam][UploadExam] failed to get form file:", err.Error())
 		c.JSON(http.StatusBadRequest, lib.BaseResponse{
 			Message: lib.ErrFailedToProcessUploadedFile.Error(),
 		})
@@ -245,6 +246,7 @@ func (h *handler) UploadExam(c *gin.Context) {
 
 	uploadedFile, err := file.Open()
 	if err != nil {
+		log.Println("[exam][UploadExam] failed to open uploaded file:", err.Error())
 		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
 			Message: lib.ErrFailedToProcessUploadedFile.Error(),
 		})
@@ -255,6 +257,7 @@ func (h *handler) UploadExam(c *gin.Context) {
 	buf := new(bytes.Buffer)
 	_, err = io.Copy(buf, uploadedFile)
 	if err != nil {
+		log.Println("[exam][UploadExam] failed to read uploaded file:", err.Error())
 		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
 			Message: lib.ErrFailedToProcessUploadedFile.Error(),
 		})
@@ -263,6 +266,7 @@ func (h *handler) UploadExam(c *gin.Context) {
 
 	zipReader, err := zip.NewReader(bytes.NewReader(buf.Bytes()), file.Size)
 	if err != nil {
+		log.Println("[exam][UploadExam] failed to read uploaded file as zip:", err.Error())
 		c.JSON(http.StatusBadRequest, lib.BaseResponse{
 			Message: lib.ErrFailedToProcessUploadedFile.Error(),
 		})
@@ -270,13 +274,13 @@ func (h *handler) UploadExam(c *gin.Context) {
 	}
 
 	fileMap := map[string]*zip.File{}
-
 	for _, f := range zipReader.File {
 		fileMap[f.Name] = f
 	}
 
 	examFile, ok := fileMap[constants.UjianCSV]
 	if !ok {
+		log.Println("[exam][UploadExam] ujian.csv not found in zip")
 		c.JSON(http.StatusBadRequest, lib.BaseResponse{
 			Message: lib.ErrFailedToProcessUploadedFile.Error(),
 		})
@@ -285,47 +289,93 @@ func (h *handler) UploadExam(c *gin.Context) {
 
 	questionsFile, ok := fileMap[constants.SoalCSV]
 	if !ok {
+		log.Println("[exam][UploadExam] soal.csv not found in zip")
 		c.JSON(http.StatusBadRequest, lib.BaseResponse{
 			Message: lib.ErrFailedToProcessUploadedFile.Error(),
 		})
 		return
 	}
 
-	mcqOptionsFile, ok := fileMap[constants.KunciCSV]
+	/*mcqOptionsFile, ok := fileMap[constants.KunciCSV]
 	if !ok {
+		log.Println("[exam][UploadExam] kunci.csv not found in zip")
 		c.JSON(http.StatusBadRequest, lib.BaseResponse{
 			Message: lib.ErrFailedToProcessUploadedFile.Error(),
 		})
 		return
 	}
 
-	participantsFile, ok := fileMap[constants.KunciCSV]
+	participantsFile, ok := fileMap[constants.PesertaCSV]
 	if !ok {
+		log.Println("[exam][UploadExam] peserta.csv not found in zip")
 		c.JSON(http.StatusBadRequest, lib.BaseResponse{
 			Message: lib.ErrFailedToProcessUploadedFile.Error(),
 		})
 		return
-	}
+	}*/
 
 	openedExamFile, err := examFile.Open()
 	if err != nil {
+		log.Println("[exam][UploadExam] failed to open ujian.csv:", err.Error())
 		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
 			Message: lib.ErrFailedToProcessUploadedFile.Error(),
 		})
 		return
 	}
 	defer openedExamFile.Close()
-
 	examFileHeader, examFileContent, err := lib.ReadCSV(openedExamFile)
 	if err != nil {
+		log.Println("[exam][UploadExam] failed to read ujian.csv:", err.Error())
 		c.JSON(http.StatusBadRequest, lib.BaseResponse{
-			Message: err.Error(),
+			Message: lib.ErrFailedToProcessUploadedFile.Error(),
+		})
+		return
+	}
+	if len(examFileHeader) != 2 || examFileHeader[0] != constants.Nama || examFileHeader[1] != constants.Durasi || len(examFileContent) != 1 {
+		log.Println("[exam][UploadExam] ujian.csv is not formatted as expected")
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrFailedToProcessUploadedFile.Error(),
 		})
 		return
 	}
 
+	openedQuestionsFile, err := questionsFile.Open()
+	if err != nil {
+		log.Println("[exam][UploadExam] failed to open soal.csv:", err.Error())
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: lib.ErrFailedToProcessUploadedFile.Error(),
+		})
+		return
+	}
+	defer openedQuestionsFile.Close()
+	questionsFileHeader, questionsFileContent, err := lib.ReadCSV(openedQuestionsFile)
+	if err != nil {
+		log.Println("[exam][UploadExam] failed to read soal.csv:", err.Error())
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrFailedToProcessUploadedFile.Error(),
+		})
+		return
+	}
+	if len(questionsFileHeader) != 2 || questionsFileHeader[0] != constants.Nomor || questionsFileHeader[1] != constants.Gambar {
+		log.Println("[exam][UploadExam] soal.csv is not formatted as expected")
+		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+			Message: lib.ErrFailedToProcessUploadedFile.Error(),
+		})
+		return
+	}
+	for _, questionContent := range questionsFileContent {
+		if _, ok := fileMap[questionContent[constants.Gambar]]; !ok {
+			log.Println("[exam][UploadExam] file declared in soal.csv not found:", questionContent[constants.Gambar])
+			c.JSON(http.StatusBadRequest, lib.BaseResponse{
+				Message: lib.ErrFailedToProcessUploadedFile.Error(),
+			})
+		}
+	}
+
 	log.Println("examFileHeader", examFileHeader)
 	log.Println("examFileContent", examFileContent)
+	log.Println("questionsFileHeader", questionsFileHeader)
+	log.Println("questionsFileContent", questionsFileContent)
 
 	c.JSON(http.StatusOK, lib.BaseResponse{
 		Message: constants.Success,

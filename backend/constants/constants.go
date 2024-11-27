@@ -37,4 +37,14 @@ const (
 	SoalCSV    = "soal.csv"
 	KunciCSV   = "kunci.csv"
 	PesertaCSV = "peserta.csv"
+
+	Nama      = "nama"
+	Durasi    = "durasi"
+	Nomor     = "nomor"
+	Gambar    = "gambar"
+	Soal      = "soal"
+	Deskripsi = "deskripsi"
+	Poin      = "poin"
+	Kode      = "kode"
+	Waktu     = "waktu"
 )
