@@ -15,6 +15,7 @@ const AuthorizeSession = (props) => {
 
   useEffect(() => {
     setState({
+      ...state,
       loading: true,
     })
     navigator.mediaDevices.enumerateDevices()
@@ -87,6 +88,7 @@ const AuthorizeSession = (props) => {
 
 
   const { loading, cameraId, devices } = state;
+  console.log('state', state);
   
   if (loading) {
     return (
@@ -116,9 +118,11 @@ const AuthorizeSession = (props) => {
                 <select
                   onChange={e => {
                     const value = e.target.value
-                    setState({ cameraId: undefined }, () => {
-                      setState({ cameraId: value })
-                    })
+                    console.log('value', value);
+                    setState({
+                      ...state,
+                      cameraId: value,                      
+                    });
                   }}
                 >
                   {devices.map((deviceInfo, index) => (
