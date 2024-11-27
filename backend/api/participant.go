@@ -1,7 +1,9 @@
 package api
 
 import (
+	"encoding/csv"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -430,6 +432,108 @@ func (h *handler) IsSessionAuthorized(c *gin.Context) {
 	c.JSON(http.StatusOK, lib.BaseResponse{
 		Message: constants.Success,
 	})
+}
+
+func (h *handler) GetParticipantsReport(c *gin.Context) {
+	examSerial := c.Param(constants.Serial)
+	exam, err := h.examService.GetExamBySerial(examSerial)
+	if err != nil {
+		if errors.Is(err, lib.ErrExamNotFound) {
+			c.JSON(http.StatusNotFound, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	participants, err := h.participantService.GetParticipantsByExamID(exam.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	totalPoints, err := h.participantService.GetParticipantTotalPointsByExamID(exam.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	processedParticipants := h.MapGetParticipantsByExamSerialResponse(participants, totalPoints)
+
+	questionsIDList, err := h.questionService.GetQuestionsIDByExamID(exam.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	participantsAnswers, err := h.participantService.GetParticipantsAnswersByExamID(exam.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	mapParticipantsAnswers := map[uint]map[uint]*participant.ParticipantAnswers{}
+	for _, participantAnswer := range participantsAnswers {
+		if _, ok := mapParticipantsAnswers[participantAnswer.ParticipantID]; !ok {
+			mapParticipantsAnswers[participantAnswer.ParticipantID] = map[uint]*participant.ParticipantAnswers{}
+		}
+		mapParticipantsAnswers[participantAnswer.ParticipantID][participantAnswer.QuestionID] = participantAnswer
+	}
+
+	res := [][]string{}
+	header := []string{"kode_peserta", "total_poin", "durasi", "waktu_mulai"}
+	for i := range questionsIDList {
+		header = append(header, fmt.Sprintf("jawaban_soal_%d", i+1))
+		header = append(header, fmt.Sprintf("poin_soal_%d", i+1))
+	}
+	res = append(res, header)
+
+	for _, p := range processedParticipants {
+		row := []string{p.Name, fmt.Sprintf("%d", p.TotalPoint), fmt.Sprintf("%d", p.AllowedDurationMinutes)}
+		if p.StartedAt == nil {
+			row = append(row, "-")
+		} else {
+			row = append(row, fmt.Sprintf("%v", p.StartedAt))
+		}
+
+		for i := range questionsIDList {
+			if ans, ok := mapParticipantsAnswers[p.ID][questionsIDList[i].ID]; ok {
+				row = append(row, ans.Answer)
+				row = append(row, fmt.Sprintf("%d", ans.Point))
+			} else {
+				row = append(row, "-")
+				row = append(row, "0")
+			}
+		}
+
+		res = append(res, row)
+	}
+
+	c.Header("Content-Description", "File Transfer")
+	c.Header("Content-Disposition", "attachment; filename=data.csv")
+	c.Header("Content-Type", "text/csv")
+
+	// Create a CSV writer and write to the response body
+	writer := csv.NewWriter(c.Writer)
+
+	// Write all rows to the CSV writer
+	if err := writer.WriteAll(res); err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	writer.Flush()
 }
 
 /***

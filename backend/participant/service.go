@@ -20,6 +20,7 @@ type Service interface {
 	GetParticipantByExamIDAndName(examID uint, name string) (*Participant, error)
 
 	GetParticipantTotalPointsByExamID(examID uint) ([]*ParticipantTotalPoint, error)
+	GetParticipantsAnswersByExamID(examID uint) ([]*ParticipantAnswers, error)
 
 	GenerateToken(examSerial string, participantID uint, sessionSerial string) string
 	VerifyToken(token *jwt.Token) (interface{}, error)
@@ -118,6 +119,15 @@ func (s *service) GetParticipantTotalPointsByExamID(examID uint) ([]*Participant
 	if err != nil {
 		log.Println("[participant][service][GetParticipantTotalPointsByExamID] failed to get participant total points:", err.Error())
 		return nil, lib.ErrFailedToGetParticipantTotalPoints
+	}
+	return res, nil
+}
+
+func (s *service) GetParticipantsAnswersByExamID(examID uint) ([]*ParticipantAnswers, error) {
+	res, err := s.participantRepository.GetParticipantsAnswersByExamID(examID)
+	if err != nil {
+		log.Println("[participant][service][GetParticipantsAnswersByExamID] failed to get participant answers by exam id:", err.Error())
+		return nil, lib.ErrFailedToGetParticipantsAnswers
 	}
 	return res, nil
 }

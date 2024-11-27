@@ -72,6 +72,7 @@ var (
 	ErrFailedToUpdateParticipant         = errors.New("failed to update participant")
 	ErrFailedToDeleteParticipant         = errors.New("failed to delete participant")
 	ErrFailedToGetParticipantTotalPoints = errors.New("failed to get participant total points")
+	ErrFailedToGetParticipantsAnswers    = errors.New("failed to get participants answers")
 
 	// submission.repository
 	ErrSubmissionNotFound = errors.New("failed to get submission")

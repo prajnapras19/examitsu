@@ -20,3 +20,10 @@ type ParticipantTotalPoint struct {
 	ParticipantID uint
 	TotalPoint    int
 }
+
+type ParticipantAnswers struct {
+	ParticipantID uint
+	QuestionID    uint
+	Answer        string
+	Point         int
+}
