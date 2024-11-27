@@ -520,8 +520,7 @@ func (h *handler) GetParticipantsReport(c *gin.Context) {
 		res = append(res, row)
 	}
 
-	c.Header("Content-Description", "File Transfer")
-	c.Header("Content-Disposition", "attachment; filename=data.csv")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s_%s.csv", exam.Name, exam.Serial))
 	c.Header("Content-Type", "text/csv")
 
 	// Create a CSV writer and write to the response body

@@ -137,6 +137,42 @@ const ReadParticipants = (props) => {
     });
   }
 
+  const handleDownload = async () => {
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/admin/participants/exam-serial/${examSerial}/report`, {}, {
+        responseType: "blob",
+        headers: {
+          'Authorization': `Bearer ${auth.token}`
+        },
+      });
+
+      const blob = new Blob([response.data], { type: "text/csv" });
+
+      const contentDisposition = response.headers["Content-Disposition"];
+      const fileName = contentDisposition
+        ? contentDisposition
+            .split("filename=")[1]
+            .replace(/["']/g, "") // Remove any quotes around the filename
+        : exam.name + "_" + exam.serial + ".csv";
+
+      const link = document.createElement("a");
+      link.download = fileName;
+      link.href = window.URL.createObjectURL(blob);
+      link.click();
+
+      window.URL.revokeObjectURL(link.href);
+    } catch (error) {
+      toast.error(`Sedang terjadi masalah pada server. Silakan coba beberapa saat lagi.`, {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    }
+  };
+
   return (
     <Container>
       <h1 className="my-4">Daftar Peserta</h1>
@@ -185,80 +221,85 @@ const ReadParticipants = (props) => {
           <i>Tidak ada data ditemukan.</i>  
         </Container>
       ) : (
-        <Table striped bordered hover className="text-center mt-5">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Kode Peserta</th>
-              <th>Durasi Maksimal (menit)</th>
-              <th>Waktu Mulai</th>
-              <th>Sisa Waktu</th>
-              <th>Status</th>
-              <th>Total Poin</th>
-              <th colSpan="3">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((participant, i) => (
-              <tr key={participant.id}>
-                <td className="p-3">{i+1}</td>
-                <td className="p-3">{participant.name}</td>
-                <td className="p-3">{participant.allowed_duration_minutes}</td>
-                <td className="p-3">{
-                  participant.started_at
-                  ? (
-                    <span>{formatIndonesianTimestamp(participant.started_at)}</span>
-                  )
-                  : (
-                    <span>-</span>
-                  )
-                }</td>
-                <td className="p-3">
-                  {
-                    participant.is_exam_started
-                    ? (
-                      <Timer
-                        startTime={participant.started_at}
-                        durationMinutes={
-                          participant.is_submitted ? 0 : participant.allowed_duration_minutes
-                        }
-                        onTimesUp={() => {}}
-                      />    
-                    )
-                    : (
-                      <p>{participant.allowed_duration_minutes}:00</p>
-                    )
-                  }
-                  
-                </td>
-                <td className="p-3">
-                  {
-                    participant.is_submitted
-                    ? (
-                      <p>Sudah selesai</p>
-                    )
-                    : participant.is_exam_started
-                    ? (
-                      <p>Sedang dikerjakan</p>
-                    )
-                    : (
-                      <p>Belum dimulai</p>
-                    )
-                  }
-                </td>
-                <td>
-                  {participant.total_point}
-                </td>
-                <td>
-                  <Button variant="primary" className="me-3" onClick={() => navigate(`/admin/exams/${exam.serial}/participants/${participant.id}/edit`)}>Ubah</Button>
-                </td>
-                <td>
-                  <Button variant="danger" onClick={() => handleShowDeleteModal(participant.id)}>Hapus</Button>
-                </td>
+        <>
+          <Button onClick={handleDownload}>
+            Unduh Data Jawaban
+          </Button>
+          <Table striped bordered hover className="text-center mt-3">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Kode Peserta</th>
+                <th>Durasi Maksimal (menit)</th>
+                <th>Waktu Mulai</th>
+                <th>Sisa Waktu</th>
+                <th>Status</th>
+                <th>Total Poin</th>
+                <th colSpan="3">Aksi</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {data.map((participant, i) => (
+                <tr key={participant.id}>
+                  <td className="p-3">{i+1}</td>
+                  <td className="p-3">{participant.name}</td>
+                  <td className="p-3">{participant.allowed_duration_minutes}</td>
+                  <td className="p-3">{
+                    participant.started_at
+                    ? (
+                      <span>{formatIndonesianTimestamp(participant.started_at)}</span>
+                    )
+                    : (
+                      <span>-</span>
+                    )
+                  }</td>
+                  <td className="p-3">
+                    {
+                      participant.is_exam_started
+                      ? (
+                        <Timer
+                          startTime={participant.started_at}
+                          durationMinutes={
+                            participant.is_submitted ? 0 : participant.allowed_duration_minutes
+                          }
+                          onTimesUp={() => {}}
+                        />    
+                      )
+                      : (
+                        <p>{participant.allowed_duration_minutes}:00</p>
+                      )
+                    }
+
+                  </td>
+                  <td className="p-3">
+                    {
+                      participant.is_submitted
+                      ? (
+                        <p>Sudah selesai</p>
+                      )
+                      : participant.is_exam_started
+                      ? (
+                        <p>Sedang dikerjakan</p>
+                      )
+                      : (
+                        <p>Belum dimulai</p>
+                      )
+                    }
+                  </td>
+                  <td>
+                    {participant.total_point}
+                  </td>
+                  <td>
+                    <Button variant="primary" className="me-3" onClick={() => navigate(`/admin/exams/${exam.serial}/participants/${participant.id}/edit`)}>Ubah</Button>
+                  </td>
+                  <td>
+                    <Button variant="danger" onClick={() => handleShowDeleteModal(participant.id)}>Hapus</Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </>
       )}
       
       <DeleteConfirmationModal
