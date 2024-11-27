@@ -7,6 +7,7 @@ import BackToHomepageCard from '../home/BackToHomepageCard';
 import AddExamCard from './AddExamCard';
 import DeleteConfirmationModal from '../../etc/DeleteConfirmationModal';
 import DownloadExamTemplateCard from './DownloadExamTemplateCard';
+import UploadExamFileCard from './UploadExamFileCard';
 
 const ReadExams = (props) => {
   const { auth } = props;
@@ -16,6 +17,15 @@ const ReadExams = (props) => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [triggerRender, setTriggerRender] = useState(false);
+
+  const [loadingUpload, setLoadingUpload] = useState(false);
+  const onFinishUpload = () => {
+    setLoadingUpload(false);
+    setTriggerRender(!triggerRender);
+  }
+  const onClickUpload = () => {
+    setLoadingUpload(true);
+  }
   
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletedExamSerial, setDeletedExamSerial] = useState("");
@@ -87,7 +97,7 @@ const ReadExams = (props) => {
     fetchData();
   }, [currentPage, auth.token, triggerRender]);
 
-  if (auth.loading) {
+  if (auth.loading || loadingUpload) {
     return (
       <Container className="text-center">
         <Spinner animation="border" />
@@ -131,6 +141,11 @@ const ReadExams = (props) => {
           <BackToHomepageCard></BackToHomepageCard>
           <AddExamCard></AddExamCard>
           <DownloadExamTemplateCard auth={auth}></DownloadExamTemplateCard>
+          <UploadExamFileCard
+            auth={auth}
+            onClick={onClickUpload}
+            onFinish={onFinishUpload}
+          ></UploadExamFileCard>
         </Container>
       </Container>
       <hr/>
