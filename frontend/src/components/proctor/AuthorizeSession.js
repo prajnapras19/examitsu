@@ -11,7 +11,6 @@ const AuthorizeSession = (props) => {
   const [scanning, setScanning] = useState(false);
   const [scannedData, setScannedData] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [facingMode, setFacingMode] = useState("environment");
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -52,10 +51,6 @@ const AuthorizeSession = (props) => {
     );
   }
 
-  const toggleCamera = () => {
-    setFacingMode((prevMode) => (prevMode === "environment" ? "user" : "environment"));
-  };
-
   return (
     <Container>
       <h1 className="my-4">Izinkan Ujian</h1>
@@ -69,16 +64,10 @@ const AuthorizeSession = (props) => {
             </Container>
             <Container className='mt-5'>
               <QrScanner
-                facingMode={facingMode}
                 delay={300}
                 style={{ width: "100%" }}
                 onScan={handleScan}
               />
-            </Container>
-            <Container>
-              <Button onClick={toggleCamera}>
-                Ganti kamera
-              </Button>
             </Container>
           </Container>
         ) : (
