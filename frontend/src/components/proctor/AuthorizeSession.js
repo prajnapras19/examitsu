@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Container, Spinner, Button } from 'react-bootstrap';
-import QrScanner from 'react-qr-scanner';
 import AuthorizeSessionModal from './AuthorizeSessionModal';
+import QrScanner from 'react-qr-scanner';
 
 const AuthorizeSession = (props) => {
   const { auth } = props;
@@ -113,8 +113,8 @@ const AuthorizeSession = (props) => {
                       <select
                         onChange={e => {
                           const value = e.target.value
-                          this.setState({ cameraId: undefined }, () => {
-                            this.setState({ cameraId: value })
+                          setState({ cameraId: undefined }, () => {
+                            setState({ cameraId: value })
                           })
                         }}
                       >
@@ -130,6 +130,16 @@ const AuthorizeSession = (props) => {
                       style={{ width: "100%" }}
                       onScan={handleScan}
                       constraints={cameraId && ({ audio: false, video: { deviceId: cameraId } })}
+                      onError={() => {
+                        toast.error(`Terjadi kesalahan.`, {
+                          position: "top-center",
+                          autoClose: 5000,
+                          hideProgressBar: false,
+                          closeOnClick: true,
+                          pauseOnHover: true,
+                          draggable: true,
+                        });
+                      }}
                     />
                   </Container>
                 </>
