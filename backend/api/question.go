@@ -131,7 +131,7 @@ func (h *handler) GetUploadQuestionBlobURL(c *gin.Context) {
 
 	fileName, err := lib.GenerateRandomString(constants.DefaultRandomQuestionBlobFilenameLength)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
 			Message: lib.ErrUnknownError.Error(),
 		})
 		return
@@ -142,7 +142,7 @@ func (h *handler) GetUploadQuestionBlobURL(c *gin.Context) {
 		FileType: req.FileType,
 	})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, lib.BaseResponse{
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
 			Message: err.Error(),
 		})
 		return
