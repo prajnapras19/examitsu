@@ -11,7 +11,7 @@ const AuthorizeSession = (props) => {
   const [scanning, setScanning] = useState(false);
   const [scannedData, setScannedData] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [facingMode, setFacingMode] = useState("rear");
+  const [facingMode, setFacingMode] = useState("environment");
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -53,7 +53,7 @@ const AuthorizeSession = (props) => {
   }
 
   const toggleCamera = () => {
-    setFacingMode((prevMode) => (prevMode === "rear" ? "front" : "rear"));
+    setFacingMode((prevMode) => (prevMode === "environment" ? "user" : "environment"));
   };
 
   return (
@@ -77,7 +77,7 @@ const AuthorizeSession = (props) => {
             </Container>
             <Container>
               <Button onClick={toggleCamera}>
-                Ganti Kamera
+                Ganti kamera
               </Button>
             </Container>
           </Container>
