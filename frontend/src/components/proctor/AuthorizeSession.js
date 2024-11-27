@@ -93,7 +93,7 @@ const AuthorizeSession = (props) => {
       <Container className='mt-5 text-center'>
         {scanning ? (
           <Container>
-            {state.loading
+            {loading
             ? (
               <Container className="text-center">
                 <Spinner animation="border" />
@@ -129,6 +129,7 @@ const AuthorizeSession = (props) => {
                       delay={300}
                       style={{ width: "100%" }}
                       onScan={handleScan}
+                      constraints={cameraId && ({ audio: false, video: { deviceId: cameraId } })}
                     />
                   </Container>
                 </>
