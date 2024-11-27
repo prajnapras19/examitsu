@@ -249,7 +249,7 @@ func (h *handler) StartExam(c *gin.Context) {
 		return
 	}
 
-	if participant.EndedAt != nil {
+	if participant.EndedAt != nil || (participant.StartedAt != nil && participant.StartedAt.Add(time.Duration(participant.AllowedDurationMinutes)*time.Minute).Before(time.Now())) {
 		c.JSON(http.StatusBadRequest, lib.BaseResponse{
 			Message: lib.ErrExamAlreadySubmitted.Error(),
 		})
