@@ -13,33 +13,38 @@ const AuthorizeSession = (props) => {
   const [showModal, setShowModal] = useState(false);
   const [state, setState] = useState({ cameraId: undefined, delay: 500, devices: [], loading: false })
 
-  navigator.mediaDevices.enumerateDevices()
-  .then((devices) => {
-    const videoSelect = []
-    devices.forEach((device) => {
-      if (device.kind === 'videoinput') {
-        videoSelect.push(device)
-      }
-    })
-    return videoSelect
-  })
-  .then((devices) => {
+  useEffect(() => {
     setState({
-      cameraId: devices[0].deviceId,
-      devices,
-      loading: false,
+      loading: true,
     })
-  })
-  .catch((error) => {
-    toast.error(`Terjadi kesalahan.`, {
-      position: "top-center",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-  });
+    navigator.mediaDevices.enumerateDevices()
+    .then((devices) => {
+      const videoSelect = []
+      devices.forEach((device) => {
+        if (device.kind === 'videoinput') {
+          videoSelect.push(device)
+        }
+      })
+      return videoSelect
+    })
+    .then((devices) => {
+      setState({
+        cameraId: devices[0].deviceId,
+        devices,
+        loading: false,
+      })
+    })
+    .catch((error) => {
+      toast.error(`Terjadi kesalahan.`, {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    })
+  }, []);
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -60,9 +65,6 @@ const AuthorizeSession = (props) => {
   const resumeScanning = () => {
     setScanning(true);
     setScannedData("");
-    setState({
-      loading: true,
-    })
   };
   
   useEffect(() => {
@@ -85,6 +87,16 @@ const AuthorizeSession = (props) => {
 
 
   const { loading, cameraId, devices } = state;
+  
+  if (loading) {
+    return (
+      <Container className="text-center">
+        <Spinner animation="border" />
+        <p>Mohon tunggu...</p>
+      </Container>
+    );
+  }
+
   return (
     <Container>
       <h1 className="my-4">Izinkan Ujian</h1>
@@ -93,58 +105,46 @@ const AuthorizeSession = (props) => {
       <Container className='mt-5 text-center'>
         {scanning ? (
           <Container>
-            {loading
-            ? (
-              <Container className="text-center">
-                <Spinner animation="border" />
-                <p>Mohon tunggu...</p>
+            <Container>
+              <Button variant='danger' onClick={pauseScanning}>Hentikan Pemindaian</Button>
+            </Container>
+            <Container className="mt-5 flex">
+              <Container>
+                Kamera:
               </Container>
-            )
-            : (
-                <>
-                  <Container>
-                    <Button variant='danger' onClick={pauseScanning}>Hentikan Pemindaian</Button>
-                  </Container>
-                  <Container className="mt-5 flex">
-                    <Container>
-                      Kamera:
-                    </Container>
-                    <Container>
-                      <select
-                        onChange={e => {
-                          const value = e.target.value
-                          setState({ cameraId: undefined }, () => {
-                            setState({ cameraId: value })
-                          })
-                        }}
-                      >
-                        {devices.map((deviceInfo, index) => (
-                          <React.Fragment key={deviceInfo.deviceId}><option value={deviceInfo.deviceId}>{deviceInfo.label || `camera ${index}`}</option></React.Fragment>
-                        ))}
-                      </select>
-                    </Container>
-                  </Container>
-                  <Container className='mt-5'>
-                    <QrScanner
-                      delay={300}
-                      style={{ width: "100%" }}
-                      onScan={handleScan}
-                      constraints={cameraId && ({ audio: false, video: { deviceId: cameraId } })}
-                      onError={() => {
-                        toast.error(`Terjadi kesalahan.`, {
-                          position: "top-center",
-                          autoClose: 5000,
-                          hideProgressBar: false,
-                          closeOnClick: true,
-                          pauseOnHover: true,
-                          draggable: true,
-                        });
-                      }}
-                    />
-                  </Container>
-                </>
-              )
-            }
+              <Container>
+                <select
+                  onChange={e => {
+                    const value = e.target.value
+                    setState({ cameraId: undefined }, () => {
+                      setState({ cameraId: value })
+                    })
+                  }}
+                >
+                  {devices.map((deviceInfo, index) => (
+                    <React.Fragment key={deviceInfo.deviceId}><option value={deviceInfo.deviceId}>{deviceInfo.label || `camera ${index}`}</option></React.Fragment>
+                  ))}
+                </select>
+              </Container>
+            </Container>
+            <Container className='mt-5'>
+              <QrScanner
+                delay={300}
+                style={{ width: "100%" }}
+                onScan={handleScan}
+                constraints={cameraId && ({ audio: false, video: { deviceId: cameraId } })}
+                onError={() => {
+                  toast.error(`Terjadi kesalahan.`, {
+                    position: "top-center",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                  });
+                }}
+              />
+            </Container>
           </Container>
         ) : (
           <Container>
