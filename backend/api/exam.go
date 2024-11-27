@@ -20,6 +20,8 @@ import (
 	"github.com/prajnapras19/project-form-exam-sman2/backend/exam"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/example"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/mcqoption"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/participant"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/question"
 )
 
@@ -434,7 +436,7 @@ func (h *handler) UploadExam(c *gin.Context) {
 	log.Println("participantsFileHeader", participantsFileHeader)
 	log.Println("participantsFileContent", participantsFileContent)
 
-	duration, _ := strconv.ParseUint(c.Param(examFileContent[0][constants.Durasi]), 10, 64)
+	duration, _ := strconv.ParseUint(examFileContent[0][constants.Durasi], 10, 64)
 	savedExam, err := h.examService.CreateExam(&exam.Exam{
 		Name:                   examFileContent[0][constants.Nama],
 		AllowedDurationMinutes: uint(duration),
@@ -526,8 +528,38 @@ func (h *handler) UploadExam(c *gin.Context) {
 			})
 			return
 		}
-
 		questionsNameToIDMap[questionContent[constants.Nomor]] = savedQuestion.ID
+	}
+
+	for _, mcqOption := range mcqOptionsFileContent {
+		point, _ := strconv.ParseInt(mcqOption[constants.Poin], 10, 64)
+		_, err := h.mcqOptionService.CreateMcqOption(&mcqoption.McqOption{
+			QuestionID:  questionsNameToIDMap[mcqOption[constants.Soal]],
+			Description: mcqOption[constants.Deskripsi],
+			Point:       int(point),
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+	}
+
+	participants := []*participant.Participant{}
+	for _, p := range participantsFileContent {
+		participants = append(participants, &participant.Participant{
+			ExamID:                 savedExam.ID,
+			Name:                   p[constants.Kode],
+			AllowedDurationMinutes: savedExam.AllowedDurationMinutes,
+		})
+	}
+	_, err = h.participantService.CreateParticipants(participants)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+		return
 	}
 
 	c.JSON(http.StatusOK, lib.BaseResponse{
