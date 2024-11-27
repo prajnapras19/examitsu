@@ -4,17 +4,23 @@ import (
 	"archive/zip"
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/client/storage"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/constants"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/exam"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/example"
 	"github.com/prajnapras19/project-form-exam-sman2/backend/lib"
+	"github.com/prajnapras19/project-form-exam-sman2/backend/question"
 )
 
 /***
@@ -422,14 +428,107 @@ func (h *handler) UploadExam(c *gin.Context) {
 		return
 	}
 
-	log.Println("examFileHeader", examFileHeader)
-	log.Println("examFileContent", examFileContent)
-	log.Println("questionsFileHeader", questionsFileHeader)
-	log.Println("questionsFileContent", questionsFileContent)
+	// TODO
 	log.Println("mcqOptionsFileHeader", mcqOptionsFileHeader)
 	log.Println("mcqOptionsFileContent", mcqOptionsFileContent)
 	log.Println("participantsFileHeader", participantsFileHeader)
 	log.Println("participantsFileContent", participantsFileContent)
+
+	duration, _ := strconv.ParseUint(c.Param(examFileContent[0][constants.Durasi]), 10, 64)
+	savedExam, err := h.examService.CreateExam(&exam.Exam{
+		Name:                   examFileContent[0][constants.Nama],
+		AllowedDurationMinutes: uint(duration),
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+			Message: err.Error(),
+		})
+	}
+
+	questionsNameToIDMap := map[string]uint{}
+	for _, questionContent := range questionsFileContent {
+		questionImageFile := fileMap[questionContent[constants.Gambar]]
+
+		fileName, err := lib.GenerateRandomString(constants.DefaultRandomQuestionBlobFilenameLength)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+				Message: lib.ErrUnknownError.Error(),
+			})
+			return
+		}
+
+		storageURL, err := h.storageService.GetUploadURL(&storage.GetUploadURLRequest{
+			FileName: fileName,
+			FileType: constants.ApplicationOctetStream,
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+
+		openedImage, err := questionImageFile.Open()
+		if err != nil {
+			log.Println("[exam][UploadExam] failed to open", questionImageFile.Name, err.Error())
+			c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+				Message: lib.ErrFailedToProcessUploadedFile.Error(),
+			})
+			return
+		}
+		defer openedImage.Close()
+		var buf bytes.Buffer
+		_, err = io.Copy(&buf, openedImage)
+		if err != nil {
+			log.Println("[exam][UploadExam] failed to read", questionImageFile.Name, err.Error())
+			c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+				Message: lib.ErrFailedToProcessUploadedFile.Error(),
+			})
+			return
+		}
+		err = h.storageService.UploadWithSignedURL(storageURL.UploadURL, buf.Bytes(), constants.ApplicationOctetStream)
+		if err != nil {
+			log.Println("[exam][UploadExam] failed to upload image", questionImageFile.Name, "as", fileName, err.Error())
+			c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+				Message: lib.ErrFailedToProcessUploadedFile.Error(),
+			})
+			return
+		}
+
+		editorJSImageBlockData := map[string]interface{}{
+			"time": time.Now().UnixMilli(),
+			"blocks": []interface{}{
+				map[string]interface{}{
+					"id":   uuid.New().String(),
+					"type": "image",
+					"data": map[string]interface{}{
+						"caption":        "",
+						"withBorder":     false,
+						"withBackground": false,
+						"stretched":      false,
+						"file": map[string]interface{}{
+							"url": storageURL.PublicURL,
+						},
+					},
+				},
+			},
+			"version": "2.30.7",
+		}
+		dataJSON, _ := json.Marshal(editorJSImageBlockData)
+
+		savedQuestion, err := h.questionService.CreateQuestion(&question.Question{
+			ExamID: savedExam.ID,
+			Data:   string(dataJSON),
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, lib.BaseResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+
+		questionsNameToIDMap[questionContent[constants.Nomor]] = savedQuestion.ID
+	}
 
 	c.JSON(http.StatusOK, lib.BaseResponse{
 		Message: constants.Success,

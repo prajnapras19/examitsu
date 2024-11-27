@@ -47,4 +47,6 @@ const (
 	Poin      = "poin"
 	Kode      = "kode"
 	Waktu     = "waktu"
+
+	ApplicationOctetStream = "application/octet-stream"
 )

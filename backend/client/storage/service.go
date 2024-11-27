@@ -1,8 +1,10 @@
 package storage
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -15,6 +17,7 @@ import (
 
 type Service interface {
 	GetUploadURL(req *GetUploadURLRequest) (*GetUploadURLResponse, error)
+	UploadWithSignedURL(signedURL string, content []byte, contentType string) error
 }
 
 type service struct {
@@ -50,4 +53,29 @@ func (s *service) GetUploadURL(req *GetUploadURLRequest) (*GetUploadURLResponse,
 		UploadURL: signedUrl,
 		PublicURL: fmt.Sprintf("https://storage.googleapis.com/%s/%s", s.cfg.BucketName, req.FileName),
 	}, nil
+}
+
+func (s *service) UploadWithSignedURL(signedURL string, content []byte, contentType string) error {
+	req, err := http.NewRequest(http.MethodPut, signedURL, bytes.NewReader(content))
+	if err != nil {
+		return fmt.Errorf("failed to create HTTP request: %w", err)
+	}
+
+	// Set the Content-Type header
+	req.Header.Set("Content-Type", contentType)
+
+	// Perform the HTTP request using the default HTTP client
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to execute HTTP request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check the response status
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("upload failed: status %d, body: %s", resp.StatusCode, body)
+	}
+	return nil
 }
