@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { Container, Spinner, Button } from 'react-bootstrap';
 import QrScanner from 'react-qr-scanner';
 import AuthorizeSessionModal from './AuthorizeSessionModal';
+import Reader from 'react-qr-scanner';
 
 const AuthorizeSession = (props) => {
   const { auth } = props;
@@ -125,10 +126,20 @@ const AuthorizeSession = (props) => {
                     </Container>
                   </Container>
                   <Container className='mt-5'>
-                    <QrScanner
+                    <Reader
                       delay={300}
                       style={{ width: "100%" }}
                       onScan={handleScan}
+                      onError={() => {
+                        toast.error(`Terjadi kesalahan.`, {
+                          position: "top-center",
+                          autoClose: 5000,
+                          hideProgressBar: false,
+                          closeOnClick: true,
+                          pauseOnHover: true,
+                          draggable: true,
+                        });
+                      }}
                       constraints={cameraId && ({ audio: false, video: { deviceId: cameraId } })}
                     />
                   </Container>
