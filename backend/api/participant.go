@@ -32,6 +32,8 @@ type ParticipantData struct {
 	StartedAt              *time.Time `json:"started_at"`
 	EndedAt                *time.Time `json:"ended_at"`
 	AllowedDurationMinutes uint       `json:"allowed_duration_minutes"`
+	IsExamStarted          bool       `json:"is_exam_started"`
+	IsSubmitted            bool       `json:"is_submitted"`
 	TotalPoint             int        `json:"total_point"`
 }
 
@@ -484,6 +486,12 @@ func (h *handler) MapGetParticipantsByExamSerialResponse(svcRes []*participant.P
 	}
 	for i := range participantData {
 		participantData[i].TotalPoint = totalPointsMap[participantData[i].ID]
+		if participantData[i].StartedAt != nil {
+			participantData[i].IsExamStarted = true
+			if participantData[i].EndedAt != nil || participantData[i].StartedAt.Add(time.Duration(participantData[i].AllowedDurationMinutes)*time.Minute).Before(time.Now()) {
+				participantData[i].IsSubmitted = true
+			}
+		}
 	}
 	return participantData
 }

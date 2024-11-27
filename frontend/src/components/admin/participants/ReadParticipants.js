@@ -10,6 +10,7 @@ import ReadExamsMenuCard from '../exam/ReadExamsMenuCard';
 import AddParticipantsCard from './AddParticipantsCard';
 import ReadQuestionCard from '../question/ReadQuestionCard';
 import { formatIndonesianTimestamp } from '../../../utils/converter';
+import Timer from '../../participant/Timer';
 
 const ReadParticipants = (props) => {
   const { auth } = props;
@@ -191,7 +192,8 @@ const ReadParticipants = (props) => {
               <th>Kode Peserta</th>
               <th>Durasi Maksimal (menit)</th>
               <th>Waktu Mulai</th>
-              <th>Waktu Pengumpulan</th>
+              <th>Sisa Waktu</th>
+              <th>Status</th>
               <th>Total Poin</th>
               <th colSpan="3">Aksi</th>
             </tr>
@@ -211,15 +213,39 @@ const ReadParticipants = (props) => {
                     <span>-</span>
                   )
                 }</td>
-                <td className="p-3">{
-                  participant.ended_at
-                  ? (
-                    <span>{formatIndonesianTimestamp(participant.ended_at)}</span>
-                  )
-                  : (
-                    <span>-</span>
-                  )
-                }</td>
+                <td className="p-3">
+                  {
+                    participant.is_exam_started
+                    ? (
+                      <Timer
+                        startTime={participant.started_at}
+                        durationMinutes={
+                          participant.is_submitted ? 0 : participant.allowed_duration_minutes
+                        }
+                        onTimesUp={() => {}}
+                      />    
+                    )
+                    : (
+                      <p>{participant.allowed_duration_minutes}:00</p>
+                    )
+                  }
+                  
+                </td>
+                <td className="p-3">
+                  {
+                    participant.is_submitted
+                    ? (
+                      <p>Sudah selesai</p>
+                    )
+                    : participant.is_exam_started
+                    ? (
+                      <p>Sedang dikerjakan</p>
+                    )
+                    : (
+                      <p>Belum dimulai</p>
+                    )
+                  }
+                </td>
                 <td>
                   {participant.total_point}
                 </td>
